@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="styles/dashboard.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Password Manager Dashboard</h2>
+    <button class="button" onclick="addEntry()">Add Entry</button>
+    <button class="button" onclick="logout()">Log Out</button>
+    <input type="text" placeholder="Search..." class="input-box" id="search-box" onkeypress="search()">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Entry Name</th>
+            <th>Application Name</th>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody id="entryTableBody">
+          <!-- Dynamic rows added here -->
+          <tr>
+            <td>
+              <div class="text">Entry Name</div>
+            </td>
+            <td>
+                <div class="text">Application Name</div>
+            </td>
+            <td>
+              <input type="text" class="text" readonly="true" value="Username">
+            </td>
+            <td>
+              <button class="toggle-button" onclick="toggleText(this)">Show/Hide</button>
+              <input type="password" readonly="true" class="text" value="Password">
+            </td>
+            <td><button class="button">Delete</button></td>
+          </tr>
+          <!-- End of sample row -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function toggleText(button) {
+        var inputField = button.nextElementSibling;
+        if (inputField.type === 'password') {
+            inputField.type = 'text';
+            button.textContent = 'Hide';
+        } else {
+            inputField.type = 'password';
+            button.textContent = 'Show';
+        }
+    }
+
+    function search() {
+        
+    }
+
+
+    function deleteEntry(this) {
+
+    }
+
+    function logout() {
+        // Perform logout
+        window.location.href = '#login';
+    }
+
+    function addEntry() {
+        window.location.href = '#newEntry';
+    }
+
+    async function populateTable() {
+        // TODO: Acquire user session context and unhash password
+        var userId;
+
+        // Conntect to MongoDB
+        const { MongoClient } = require('mongodb');
+        const uri = process.env.MONGO_URI;
+        const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+        try {
+            await client.connect();
+
+            const database = client.db(CompSecProject);
+            const usersCollection = database.collection('credential_entries');
+            const data = await usersCollection.findOne({owner: userId});
+
+            const tableBody = document.getElementById('entryTableBody');
+            tableBody.innerHTML = '';
+
+            // Iterate through data, need to unhash password before displaying here
+            data.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="text">${entry.entry_name}</div>
+                    </td>
+                    <td>
+                        <div class="text">${entry.application_name}</div>
+                    </td>
+                    <td>
+                        <input type="text" class="text" readonly="true" value="${entry.username}">
+                    </td>
+                    <td>
+                        <button class="toggle-button" onclick="toggleText(this)">Show/Hide</button>
+                        <input type="password" readonly="true" class="text" value="${entry.password}">
+                    </td>
+                    <td><button class="button" onclick="deleteEntry(this)">Delete</button></td>
+                `;
+            })
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            alert("Error fetching data. Please try again later.");
+        } finally {
+            // Close the MongoDB connection
+            await client.close();
+      }
+    }
+
+    window.onload = populateTable;
+  </script>
+
+</body>
+</html>

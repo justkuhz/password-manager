@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Entry</title>
+  <link rel="stylesheet" href="styles/newEntry.css">
+</head>
+<body>
+  <div class="container">
+    <h2>New Entry</h2>
+    <form id="entryForm">
+      <input type="text" class="input-box" id="entryName" placeholder="Entry Name">
+      <br>
+      <input type="text" class="input-box" id="appName" placeholder="Application Name">
+      <br>
+      <input type="text" class="input-box" id="username" placeholder="Username">
+      <br>
+      <input type="password" class="input-box" id="password" placeholder="Password">
+      <br>
+      <button type="button" class="button" onclick="addEntry()">Add Entry</button>
+    </form>
+  </div>
+
+  <script>
+    async function addEntry() {
+        // TODO: Get user context or email to find credential_entries in db
+        var userId;
+
+        // Get input values
+        var entryName = document.getElementById("entryName").value;
+        var appName = document.getElementById("appName").value;
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+
+        // Connect to MongoDB
+        const { MongoClient } = require('mongodb');
+        const uri = process.env.MONGO_URI;
+        const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+        try {
+            await client.connect();
+
+            const database = client.db('CompSecProject');
+            const credentialEntries = database.collection('credential_entries');
+            const data = await credentialEntries.findOne({ email: email});
+
+            // Parse for "entries" array
+            var entries;
+
+            // Make sure an entry with ${Entry Name} doesn't exist in db
+            if (entries) {
+                document.getElementById("entryName").value = "";
+                alert("ERROR: There is already an entry with this name.\nThe entry name must be unique.");
+            }  else {
+                // Process form and add an element to mongodb entries array for the user
+
+                // Redirect user back to dashboard
+                window.location.href = '#dashboard';
+            }
+        } catch (error) {
+            console.error("Error adding entry:", error);
+            alert("An error occurred while adding an entry. Please try again later.");
+        } finally {
+            // Close the MongoDB connection
+            await client.close();
+        }
+    }
+  </script>
+</body>
+</html>
