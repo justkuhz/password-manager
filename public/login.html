@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .container {
+      margin-top: 100px;
+    }
+    .button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: #fff;
+      margin: 10px;
+    }
+    .input-box {
+      padding: 8px;
+      margin: 8px;
+      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Password Manager Web Application</h2>
+    <input type="text" class="input-box" id="username" placeholder="Username">
+    <br>
+    <input type="password" class="input-box" id="password" placeholder="Password">
+    <br>
+    <button class="button" onclick="login()">Login</button>
+    <button class="button" onclick="createAccount()">Create New Account</button>
+  </div>
+
+  <script>
+    async function login() {
+        // Get username and password input values
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+        
+        // Conntect to MongoDB
+        const { MongoClient } = require('mongodb');
+        const uri = process.env.MONGO_URI;
+        const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+        try {
+            await client.connect();
+
+            const database = client.db(CompSecProject);
+            const usersCollection = database.collection('accounts');
+
+            // Query db for login information
+            const user = await usersCollection.findOne({ username: username, password: password});
+
+            if (user) {
+                alert("Login successful!");
+                
+                // Create session and assign JWT here
+
+                window.location.href = '#dashboard';
+
+            } else {
+                alert("Invalid username or password. Please try again.");
+                // Clear input fields for better user experience
+                document.getElementById("username").value = "";
+                document.getElementById("password").value = "";
+
+            } 
+        } catch (error) {
+            console.error("Error authenticating user:", error);
+            alert("An error occurred while authenticating. Please try again later.");
+        
+        } finally {
+            // Close the MongoDB connection
+            await client.close();
+        }
+    }
+
+    function createAccount() {
+      window.location.href = '#register';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .container {
+      margin-top: 100px;
+    }
+    .input-box {
+      padding: 8px;
+      margin: 8px;
+      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: #fff;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Create New Account</h2>
+    <input type="email" class="input-box" id="email" placeholder="Email Address">
+    <br>
+    <input type="password" class="input-box" id="password" placeholder="Password">
+    <br>
+    <input type="password" class="input-box" id="confirmPassword" placeholder="Confirm Password">
+    <br>
+    <button class="button" onclick="register()">Register</button>
+  </div>
+
+  <script>
+    async function register() {
+      // Get input values
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+      var confirmPassword = document.getElementById("confirmPassword").value;
+
+      // Check if passwords match
+      if (password !== confirmPassword) {
+        alert("Passwords do not match. Please try again.");
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+        return;
+      }
+
+      // Connect to MongoDB
+      const { MongoClient } = require('mongodb');
+      const uri = process.env.MONGO_URI;
+      const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+      try {
+        await client.connect();
+
+        const database = client.db('CompSecProject'); 
+        const usersCollection = database.collection('accounts'); 
+
+        // Check if user already exists with the provided email
+        const existingUser = await usersCollection.findOne({ email: email });
+
+        if (existingUser) {
+            alert("User with this email already exists. Please use a different email.");
+            document.getElementById("email").value = "";
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+          return;
+        }
+
+        // Insert new user into the database
+        const newUser = {
+          email: email,
+          password: password // TODO: HASH PASSWORD BEFORE STORING
+        };
+
+        const result = await usersCollection.insertOne(newUser);
+        console.log("New user registered:", result.insertedId);
+        alert("Registration successful!");
+        window.location.href = '#login';
+        
+      } catch (error) {
+        console.error("Error registering user:", error);
+        alert("An error occurred while registering. Please try again later.");
+      } finally {
+        // Close the MongoDB connection
+        await client.close();
+      }
+    }
+  </script>
+</body>
+</html>
