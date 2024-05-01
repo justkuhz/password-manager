@@ -126,7 +126,7 @@ const deleteEntry = asyncHandler(async (req, res) => {
         await user.save();
 
         // Respond with success message
-        res.status(201).json({ message: "Entry deleted successfully" });
+        res.status(201).json({ message: "Entry deleted from the user's entries" });
     
     } catch (error) {
         // Handle errors
@@ -157,7 +157,7 @@ const editEntry = asyncHandler(async (req, res) => {
         await user.save();
 
         // Respond with success message
-        res.status(201).json({ message: "Entry edited successfully" });
+        res.status(201).json({ message: "Entry edited successfully" })
 
     } catch (error) {
         // Handle errors
