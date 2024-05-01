@@ -25,7 +25,4 @@ app.get("/", (req, res) => {
 // Registering new users and authenticating existing ones
 app.use("/api/user", userRoutes);
 
-// 
-
-
 const PORT = process.env.PORT || 5000; // PORT set to 8000 from .env file, otherwise 5000

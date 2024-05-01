@@ -3,6 +3,22 @@
 const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs');
 
+// entry schema
+const entrySchema = mongoose.Schema(
+    {
+        // entry name
+        entry_name: { type: String, required: true },
+        // app name
+        application_name: { type: String, required: true },
+        // app login username
+        username: { type: String, required: true },
+        // app login password
+        password: { type: String, required: true }
+    },
+    { timestamps: true }
+);
+
+// user schema
 const userSchema = mongoose.Schema(
     {
         // name
@@ -11,7 +27,8 @@ const userSchema = mongoose.Schema(
         email: { type: String, required: true, unique: true },
         // password
         password: { type: String, required: true },
-        },
+        entries: [entrySchema],
+    },
     { timestameps: true }
 );
 
