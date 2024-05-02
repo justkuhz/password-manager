@@ -1,7 +1,8 @@
 // User Class
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../middleware/jwtAuthVerification");
-const User = require("../models/userModel")
+const User = require("../models/userModel");
+const passwordControl = require("../controllers/PasswordControllers");
 
 // Register user function, creates new unique users in DB
 const registerUser = asyncHandler(async (req, res) => {
@@ -20,6 +21,13 @@ const registerUser = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error("There is already an account associated with this email.");
     }
+
+    // deny creation by throwing error if password is not strong enough
+    let passwordEval = passwordControl.getPasswordStrength(password);
+    if (passwordEval.allow === false) {
+        res.status(400);
+        throw new Error(passwordEval.suggestions[0]);
+    };
 
     const user = await User.create({
         name,

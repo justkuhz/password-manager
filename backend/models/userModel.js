@@ -1,7 +1,10 @@
 // User Model and Functions
-
 const mongoose = require('mongoose');
-const bcryptjs = require('bcryptjs');
+const bcryptjs = require('bcryptjs')
+const crypto = require('crypto');
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 // entry schema
 const entrySchema = mongoose.Schema(
@@ -32,7 +35,7 @@ const userSchema = mongoose.Schema(
     { timestameps: true }
 );
 
-// we encrypt the password input with bcrypt hash and compare
+// we hash the password input with bcrypt hash and compare
 userSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcryptjs.compare(enteredPassword, this.password);
 }
@@ -48,8 +51,32 @@ userSchema.pre('save', async function (next) {
 
     // hashing password using bcrypt hashing algorithm with password + salt combo
     this.password = await bcryptjs.hash(this.password, salt);
-})
+});
+
+function encrypt(text) {
+    const cipher = crypto.createCipheriv(algorithm, secretKey);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+}
+
+function decrypt(encryptedText) {
+    const decipher = crypto.createDecipheriv(algorithm, secretKey);
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+}
+
+// before saving entry data into user entries we encrypt password with aes
+entrySchema.pre('save', async function (next) {
+    if (!this.isModified()) {
+        next();
+    }
+
+    this.password = encrypt(this.password);
+    next();
+});
 
 // defining and exporting user model
 const User = mongoose.model("User", userSchema);
-module.exports = User;
+module.exports = { User, decrypt };
