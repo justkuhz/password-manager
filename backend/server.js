@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const { notFound, errorHandler } = require("./middleware/ErrorMiddleware");
@@ -13,6 +14,9 @@ connectDB();
 
 // app API
 const app = express();
+
+// Enable CORS for all origins
+app.use(cors());
 
 // allow app API to take JSON data
 app.use(express.json());

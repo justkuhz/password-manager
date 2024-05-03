@@ -89,20 +89,13 @@ const Signup = () => {
 
         // at this point it should be a successful new account creation into mongo database
         try {
-            const config = {
+            const { response } = await fetch ("http://localhost:8000/api/user/", {
+                method: 'POST',
                 headers: {
-                    "Content-type": "application/json",
-                }
-            };
-
-            // Stringify the data object before sending it
-            const requestData = JSON.stringify({ name, email, password });
-
-            const { data } = await axios.post(
-                "http://localhost:8000/api/user/",
-                requestData,
-                config
-            );
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({name: name, email: email, password: password})
+            });
 
             toast({
                 title: "Registration Successful",
@@ -112,7 +105,7 @@ const Signup = () => {
                 position: "bottom",
             });
 
-            localStorage.setItem('userInfo', JSON.stringify(data));
+            localStorage.setItem('userInfo', JSON.stringify(response));
 
             setLoading(false);
 
@@ -122,7 +115,7 @@ const Signup = () => {
         } catch (error) {
             toast({
                 title: "Error Occured!",
-                description: error.response.data.message,
+                description: error.message,
                 status: "error",
                 duration: 5000,
                 isClosable: true,

@@ -9,18 +9,7 @@ import background from "../resources/homepage.jpg"
 
 const Homepage = () => {
 
-  // If user is logged in or userInfo exists, push them to chats page
-  const history = useHistory();
-
-  useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-
-    // If user info found, re-route to chats
-    if (userInfo) {
-        // history.push("/chats");
-      <Redirect to = "/dashboard"/>
-    }
-  }, [history])
+  localStorage.clear();
 
   return (
     <Box

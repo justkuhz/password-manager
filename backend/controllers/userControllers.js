@@ -8,51 +8,44 @@ const inputControl = require("../controllers/InputControllers");
 // Register user function, creates new unique users in DB
 const registerUser = asyncHandler(async (req, res) => {
     // define request body params
-    let { name, email, password } = req.body;
-
+    const { name, email, password } = req.body;
+    
     if (!name || !email || !password) {
         res.status(400);
         throw new Error("Please enter all the fields.");
     }
 
     // Sanitize inputs
-    name = inputControl.sanitizeInput(name);
-    email = inputControl.sanitizeInput(email);
-    password = inputControl.sanitizeInput(password);
+    let sanitizedName = inputControl.sanitizeInput(name);
+    let sanitizedEmail = inputControl.sanitizeInput(email);
+    let sanitizedPassword = inputControl.sanitizeInput(password);
 
     // validate email address
-    if (inputControl.validateEmail(email) === false) {
+    if (inputControl.validateEmail(sanitizedEmail) === false) {
         res.status(400).json({ message: "Please enter a valid email."});
         throw new Error("Please enter a valid email.")
     }
 
     // deny creation by throwing error if password is not strong enough
-    let passwordEval = passwordControl.getPasswordStrength(password);
+    let passwordEval = passwordControl.getPasswordStrength(sanitizedPassword);
     if (passwordEval.allow === false) {
         res.status(400);
         throw new Error(passwordEval.suggestions[0]);
     };
 
-    try {
-        // check for any matching emails in user db
-        const userExists = await User.findOne({ email });
-
+    User.findOne({ email: sanitizedEmail })
+    .then(userExists => {
         if (userExists) {
             res.status(400).json({ message: "There is already an account associated with this email." });
             throw new Error("There is already an account associated with this email.");
         }
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-        throw new Error(error.message);
-    }
-
-    try {
-        const user = await User.create({
-            name,
-            email,
-            password,
+        return User.create({
+            name: sanitizedName,
+            email: sanitizedEmail,
+            password: sanitizedPassword,
         });
-
+    })
+    .then(user => {
         if (user) {
             res.status(201).json({
                 _id: user._id,
@@ -64,38 +57,47 @@ const registerUser = asyncHandler(async (req, res) => {
             res.status(400).json({ message: "User creation failure" });
             throw new Error("User creation failure");
         }
-    } catch (error) {
+    })
+    .catch(error => {
         res.status(400).json({ message: "Failed to create new user -> " + error.message });
         throw new Error("Failed to create new user: " + error.message);
-    }
+    });
 });
 
 // Authenticate a user login
 const authUser = asyncHandler(async (req, res) => {
     // define request body params
-    let { email, password } = req.body;
+    const { email, password } = req.body;
 
-    // Sanitize inputs
-    email = inputControl.sanitizeInput(email);
-    password = inputControl.sanitizeInput(password);
-
-    // find the mongodb document with a matching email
-    const user = await User.findOne({ email });
-
-    // check to match email and password
-    if (user && (await user.matchPassword(password))) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            token: token.generateToken(user._id),
-        });
-    } else {
-        res.status(401);
-        throw new Error("Invalid Email or Password. Please try again.");
+    if (!email|| !email) {
+        res.status(400);
+        throw new Error("Please enter all the fields.");
     }
 
-})
+    // Sanitize inputs
+    let sanitizedEmail = inputControl.sanitizeInput(email);
+    let sanitizedPassword = inputControl.sanitizeInput(password);
+
+    // find the mongodb document with a matching email
+    User.findOne({ email: sanitizedEmail })
+    .then(user => {
+        if (user && user.matchPassword(sanitizedPassword)) {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                token: token.generateToken(user._id),
+            });
+        } else {
+            res.status(401);
+            throw new Error("Invalid Email or Password. Please try again.");
+        }
+    })
+    .catch(error => {
+        res.status(400).json({ message: "Failed to authenticate user -> " + error.message });
+        throw new Error("Failed to authenticate user: " + error.message);
+    });
+});
 
 // Get entries
 const getEntries = asyncHandler(async (req, res) => {

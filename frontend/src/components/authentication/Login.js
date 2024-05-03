@@ -8,7 +8,6 @@ import { Button } from "@chakra-ui/button";
 import { useToast } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 import inputController from "../misc/InputControllers";
-import axios from "axios";
 
 const Login = () => {
     const [email, setEmail] = useState();
@@ -56,20 +55,13 @@ const Login = () => {
         }
 
         try {
-            const config = {
+            const { response } = await fetch ("http://localhost:8000/api/user/login", {
+                method: 'POST',
                 headers: {
-                    "Content-type": "application/json",
-                }
-            };
-
-            // Stringify the data object before sending it
-            const requestData = JSON.stringify({ email, password });
-
-            const { data } = await axios.post(
-                "http://localhost:8000/api/user/login",
-                requestData,
-                config,
-            );
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({"email": email, "password": password})
+            });
 
             toast({
                 title: "Login Successful",
@@ -79,7 +71,7 @@ const Login = () => {
                 position: "bottom",
             });
 
-            localStorage.setItem("userInfo", JSON.stringify(data));
+            localStorage.setItem("userInfo", JSON.stringify(response));
 
             setLoading(false);
 
@@ -88,7 +80,8 @@ const Login = () => {
 
         } catch (error) {
             toast({
-                title: "Login Failed!",
+                title: "Login Failed!\n",
+                description: error.message,
                 status: "error",
                 duration: 5000,
                 isClosable: true,
