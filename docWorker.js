@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
 const port = 3000;
@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 
 // Connect to MongoDB
-MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (err, client) => 
+MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true }, (err, client) => 
 {
     if (err) {
         console.error('Error occurred while connecting to MongoDB:\n', err);
