@@ -53,12 +53,14 @@ function getPasswordStrength(password) {
 
     // Return strength as a string value
     let strengthString = "";
-    if (strength <= 2) {
+    if (strength <= 1) {
         strengthString = "weak";
-    } else if (strength === 3) {
+    } else if (strength === 2) {
         strengthString = "medium";
-    } else if (strength === 4) {
+    } else if (strength === 3) {
         strengthString = "strong";
+    } else if (strength === 4) {
+        strengthString = "very strong";
     } 
 
     // Suggestions for improving password strength
@@ -70,7 +72,7 @@ function getPasswordStrength(password) {
 
     // Allow/Disallow use of password
     let allow = false;
-    if (strength === 5) {
+    if (strength === 4) {
         allow = true;
     }
 

@@ -3,11 +3,17 @@ const asyncHandler = require("express-async-handler");
 const generateToken = require("../middleware/jwtAuthVerification");
 const User = require("../models/userModel");
 const passwordControl = require("../controllers/PasswordControllers");
+const inputControl = require("../controllers/InputControllers");
 
 // Register user function, creates new unique users in DB
 const registerUser = asyncHandler(async (req, res) => {
     // define request body params
     const { name, email, password } = req.body;
+
+    // Sanitize inputs
+    name = inputControl.sanitizeInput(name);
+    email = inputControl.sanitizeInput(email);
+    password = inputControl.sanitizeInput(password);
 
     if (!name || !email || !password) {
         res.status(400);
@@ -18,8 +24,14 @@ const registerUser = asyncHandler(async (req, res) => {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-        res.status(400);
+        res.status(400).json({ message: "There is already an account associated with this email." });
         throw new Error("There is already an account associated with this email.");
+    }
+
+    // validate email address
+    if (inputControl.validateEmail(email) === false) {
+        res.status(400).json({ message: "Please enter a valid email."});
+        throw new Error("Please enter a valid email.")
     }
 
     // deny creation by throwing error if password is not strong enough
@@ -53,6 +65,10 @@ const authUser = asyncHandler(async (req, res) => {
     // define request body params
     const { email, password } = req.body;
 
+    // Sanitize inputs
+    email = inputControl.sanitizeInput(email);
+    password = inputControl.sanitizeInput(password);
+
     // find the mongodb document with a matching email
     const user = await User.findOne({ email });
 
@@ -71,7 +87,31 @@ const authUser = asyncHandler(async (req, res) => {
 
 })
 
-// TODO: add functions for adding, editing, and removing entries into the entries array
+// Get entries
+const getEntries = asyncHandler(async (req, res) => {
+    // define user id from request params
+    const userId = req.params.userId;
+
+    try {
+        // get user document from mongodb
+        const user = await User.findById({ userId });
+
+        if (!user) {
+            res.status(404).json({ message: "User not found "});
+            throw new Error("User not found.");
+        }
+
+        // Send entries array (property) from user document
+        const entries = user.entries;
+        res.send(entries);
+
+    } catch (error) {
+        // Handle errors
+        console.error("Error retrieving entries:", error);
+        res.status(500).json({ message: "Server error" });
+        throw new Error("Error retrieving entries.");
+    }
+});
 
 // Create entry
 const createEntry = asyncHandler(async (req, res) => {
@@ -79,10 +119,16 @@ const createEntry = asyncHandler(async (req, res) => {
     const { entry_name, application_name, username, password } = req.body;
     const userId = req.params.userId;
 
+    // Sanitize inputs
+    entry_name = inputControl.sanitizeInput(entry_name);
+    application_name = inputControl.sanitizeInput(application_name);
+    email = inputControl.sanitizeInput(email);
+    password = inputControl.sanitizeInput(password);
+
     try {
         /* make sure entry_name is unique */
         // find users document in mongodb
-        const user = await User.findById({ userId })
+        const user = await User.findById({ userId });
 
         if (!user) {
             res.status(404).json({ message: "User not found" });
@@ -151,6 +197,12 @@ const editEntry = asyncHandler(async (req, res) => {
     const userId = req.params.userId;
     const entryId = req.params.entryId;
 
+    // Sanitize inputs
+    entry_name = inputControl.sanitizeInput(entry_name);
+    application_name = inputControl.sanitizeInput(application_name);
+    email = inputControl.sanitizeInput(email);
+    password = inputControl.sanitizeInput(password);
+
     try {
         // Find user document
         const user = await User.findById(userId);
@@ -175,4 +227,4 @@ const editEntry = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { deleteEntry, createEntry, editEntry, authUser, registerUser };
+module.exports = { getEntries, deleteEntry, createEntry, editEntry, authUser, registerUser };

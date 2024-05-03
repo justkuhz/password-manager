@@ -2,7 +2,7 @@
 
 const express = require('express');
 const { verifyToken } = require('../middleware/jwtAuthVerification');
-const { deleteEntry, createEntry, editEntry, authUser, registerUser } = require("../controllers/userControllers");
+const { deleteEntry, createEntry, editEntry, authUser, registerUser, getEntries} = require("../controllers/UserControllers");
 
 
 // router API endpoint
@@ -13,6 +13,9 @@ router.route('/').post(registerUser);
 
 // POST for authenticating a login attempt
 router.route('/login').post(authUser);
+
+// GET for getting the entries table
+router.route('/getEntries').get(verifyToken, getEntries);
 
 // POST for creating and appending an entry
 router.route('/createEntry').post(verifyToken, createEntry);
