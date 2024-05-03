@@ -2,8 +2,8 @@
 
 import React, { useEffect } from 'react';
 import { Container, Box, Text, Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
-import Login from "../components/authentication/Login";
-import Signup from "../components/authentication/Signup";
+import Login from "../../components/authentication/Login";
+import Signup from "../../components/authentication/Signup";
 import { Redirect, useHistory } from 'react-router-dom';
 import background from "../resources/homepage.jpg"
 
