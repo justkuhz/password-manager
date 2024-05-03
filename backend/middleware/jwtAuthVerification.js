@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const User = require("../models/userModel");
+const crypto = require('crypto');
 
 // Secret key used to sign the JWT
 const secretKey = crypto.randomBytes(32).toString('hex');

@@ -1,8 +1,9 @@
 const express = require('express');
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
-const colors = require(colors);
+const { notFound, errorHandler } = require("./middleware/ErrorMiddleware");
 const userRoutes = require("./routes/userRoutes");
+const colors = require("colors");
 
 // connect to .env file
 dotenv.config();
@@ -26,3 +27,11 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRoutes);
 
 const PORT = process.env.PORT || 5000; // PORT set to 8000 from .env file, otherwise 5000
+
+app.use(notFound);
+app.use(errorHandler);
+
+const server = app.listen(
+    PORT,
+    console.log(`Server started on PORT ${PORT}`.yellow.bold)
+);
