@@ -4,7 +4,6 @@ const express = require('express');
 const { verifyToken } = require('../middleware/jwtAuthVerification');
 const { deleteEntry, createEntry, editEntry, authUser, registerUser, getEntries} = require("../controllers/UserControllers");
 
-
 // router API endpoint
 const router = express.Router();
 

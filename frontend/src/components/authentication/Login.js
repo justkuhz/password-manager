@@ -59,12 +59,15 @@ const Login = () => {
             const config = {
                 headers: {
                     "Content-type": "application/json",
-                },
+                }
             };
 
+            // Stringify the data object before sending it
+            const requestData = JSON.stringify({ email, password });
+
             const { data } = await axios.post(
-                "/api/user/login",
-                { email, password },
+                "http://localhost:8000/api/user/login",
+                requestData,
                 config,
             );
 

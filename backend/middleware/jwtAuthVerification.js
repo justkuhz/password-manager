@@ -7,12 +7,10 @@ const crypto = require('crypto');
 const secretKey = crypto.randomBytes(32).toString('hex');
 
 // Call this when a user logs in
-const generateToken = (user) => {
+const generateToken = (id) => {
 
     // Sign the JWT with the secret key
-    const token = jwt.sign({user}, secretKey, { expiresIn: '1h' }); 
-
-    return token;
+    return jwt.sign({id}, secretKey, { expiresIn: '1h' }); 
 }
 
 

@@ -70,7 +70,7 @@ function getPasswordStrength(password) {
 
     // Allow/Disallow use of password
     let allow = false;
-    if (strength === 5) {
+    if (strength === 4) {
         allow = true;
     }
 

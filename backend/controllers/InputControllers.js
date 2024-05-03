@@ -13,7 +13,7 @@ function validateEmail(input) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // Test the input email against the regex
-    return emailRegex.test(email);
+    return emailRegex.test(input);
 }
 
 module.exports = { sanitizeInput, validateEmail };

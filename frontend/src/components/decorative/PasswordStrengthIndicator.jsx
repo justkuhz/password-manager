@@ -2,6 +2,7 @@ import React from 'react';
 
 const PasswordStrengthIndicator = ({ strength }) => {
   const getColor = () => {
+    var default_color = '#dededf';
     switch (strength) {
         case 1:
             return '#ff0000'; // Weak (red)
@@ -12,7 +13,7 @@ const PasswordStrengthIndicator = ({ strength }) => {
         case 4:
             return '#00a613'; // Strong (green)
         default:
-            return '#dededf';
+            return default_color;
     }
   };
 

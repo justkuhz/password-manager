@@ -17,7 +17,6 @@ const Signup = () => {
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
     const [confirmpassword, setConfirmpassword] = useState();
-    const [picture, setPicture] = useState();
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
     const toast = useToast();
@@ -96,9 +95,12 @@ const Signup = () => {
                 }
             };
 
+            // Stringify the data object before sending it
+            const requestData = JSON.stringify({ name, email, password });
+
             const { data } = await axios.post(
-                "/api/user",
-                { name, email, password, picture },
+                "http://localhost:8000/api/user/",
+                requestData,
                 config
             );
 
@@ -128,14 +130,12 @@ const Signup = () => {
             });
             setLoading(false);
         }
-
-
     };
 
     return (
         <VStack spacing='5px' color='black'>
 
-            <FormControl id='first-name' isRequired>
+            <FormControl id='name' isRequired>
                 <FormLabel>Name</FormLabel>
                 <Input
                     placeholder='Enter Your Name'

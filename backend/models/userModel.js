@@ -48,7 +48,6 @@ userSchema.pre('save', async function (next) {
 
     // 10 rounds used to generate salt
     const salt = await bcryptjs.genSalt(10);
-
     // hashing password using bcrypt hashing algorithm with password + salt combo
     this.password = await bcryptjs.hash(this.password, salt);
 });
@@ -79,4 +78,4 @@ entrySchema.pre('save', async function (next) {
 
 // defining and exporting user model
 const User = mongoose.model("User", userSchema);
-module.exports = { User, decrypt };
+module.exports = User, { decrypt };

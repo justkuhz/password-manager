@@ -1,6 +1,6 @@
 // User Class
 const asyncHandler = require("express-async-handler");
-const generateToken = require("../middleware/jwtAuthVerification");
+const token = require("../middleware/JWTAuthVerification");
 const User = require("../models/userModel");
 const passwordControl = require("../controllers/PasswordControllers");
 const inputControl = require("../controllers/InputControllers");
@@ -8,25 +8,17 @@ const inputControl = require("../controllers/InputControllers");
 // Register user function, creates new unique users in DB
 const registerUser = asyncHandler(async (req, res) => {
     // define request body params
-    const { name, email, password } = req.body;
-
-    // Sanitize inputs
-    name = inputControl.sanitizeInput(name);
-    email = inputControl.sanitizeInput(email);
-    password = inputControl.sanitizeInput(password);
+    let { name, email, password } = req.body;
 
     if (!name || !email || !password) {
         res.status(400);
         throw new Error("Please enter all the fields.");
     }
 
-    // check for any matching emails in user db
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
-        res.status(400).json({ message: "There is already an account associated with this email." });
-        throw new Error("There is already an account associated with this email.");
-    }
+    // Sanitize inputs
+    name = inputControl.sanitizeInput(name);
+    email = inputControl.sanitizeInput(email);
+    password = inputControl.sanitizeInput(password);
 
     // validate email address
     if (inputControl.validateEmail(email) === false) {
@@ -41,29 +33,47 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error(passwordEval.suggestions[0]);
     };
 
-    const user = await User.create({
-        name,
-        email,
-        password,
-    });
+    try {
+        // check for any matching emails in user db
+        const userExists = await User.findOne({ email });
 
-    if (user) {
-        res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            token: generateToken(user._id),
-        })
-    } else {
-        res.status(400);
-        throw new Error("User creation failure");
+        if (userExists) {
+            res.status(400).json({ message: "There is already an account associated with this email." });
+            throw new Error("There is already an account associated with this email.");
+        }
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+        throw new Error(error.message);
+    }
+
+    try {
+        const user = await User.create({
+            name,
+            email,
+            password,
+        });
+
+        if (user) {
+            res.status(201).json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                token: token.generateToken(user._id),
+            })
+        } else {
+            res.status(400).json({ message: "User creation failure" });
+            throw new Error("User creation failure");
+        }
+    } catch (error) {
+        res.status(400).json({ message: "Failed to create new user -> " + error.message });
+        throw new Error("Failed to create new user: " + error.message);
     }
 });
 
 // Authenticate a user login
 const authUser = asyncHandler(async (req, res) => {
     // define request body params
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     // Sanitize inputs
     email = inputControl.sanitizeInput(email);
@@ -78,7 +88,7 @@ const authUser = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
-            token: generateToken(user._id),
+            token: token.generateToken(user._id),
         });
     } else {
         res.status(401);
@@ -116,7 +126,7 @@ const getEntries = asyncHandler(async (req, res) => {
 // Create entry
 const createEntry = asyncHandler(async (req, res) => {
     // define request body params
-    const { entry_name, application_name, username, password } = req.body;
+    let { entry_name, application_name, username, password } = req.body;
     const userId = req.params.userId;
 
     // Sanitize inputs
@@ -193,7 +203,7 @@ const deleteEntry = asyncHandler(async (req, res) => {
 // Edit entry
 const editEntry = asyncHandler(async (req, res) => {
     // Define and gather parameter information
-    const { entry_name, application_name, username, password } = req.body;
+    let { entry_name, application_name, username, password } = req.body;
     const userId = req.params.userId;
     const entryId = req.params.entryId;
 
