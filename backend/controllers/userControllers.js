@@ -47,6 +47,9 @@ const registerUser = asyncHandler(async (req, res) => {
     })
     .then(user => {
         if (user) {
+            const userData = { _id: user._id, name: user.name, email: user.email, token: token.generateToken(user._id), }
+            req.session.user = userData;
+
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
@@ -54,13 +57,13 @@ const registerUser = asyncHandler(async (req, res) => {
                 token: token.generateToken(user._id),
             })
         } else {
-            res.status(400).json({ message: "User creation failure" });
             throw new Error("User creation failure");
         }
     })
     .catch(error => {
-        res.status(400).json({ message: "Failed to create new user -> " + error.message });
-        throw new Error("Failed to create new user: " + error.message);
+        res.status(400).json({ 
+            message: "Failed to create new user.",
+            cause: error });
     });
 });
 
@@ -82,6 +85,8 @@ const authUser = asyncHandler(async (req, res) => {
     User.findOne({ email: sanitizedEmail })
     .then(user => {
         if (user && user.matchPassword(sanitizedPassword)) {
+            const userData = { _id: user._id, name: user.name, email: user.email, token: token.generateToken(user._id), }
+            req.session.user = userData;
             res.json({
                 _id: user._id,
                 name: user.name,
@@ -94,148 +99,245 @@ const authUser = asyncHandler(async (req, res) => {
         }
     })
     .catch(error => {
-        res.status(400).json({ message: "Failed to authenticate user -> " + error.message });
-        throw new Error("Failed to authenticate user: " + error.message);
+        res.status(500).json({ 
+            message: "Failed to authenticate user.",
+            cause: error });
     });
 });
 
 // Get entries
 const getEntries = asyncHandler(async (req, res) => {
-    // define user id from request params
-    const userId = req.params.userId;
-
     try {
-        // get user document from mongodb
-        const user = await User.findById({ userId });
 
-        if (!user) {
-            res.status(404).json({ message: "User not found "});
-            throw new Error("User not found.");
-        }
+    // define user id from request params
+    const userData = req.session.user;
+    if (userData === null) {
+        throw new Error("User session not found." );
+    }
+    const userId = userData._id.toString();
 
-        // Send entries array (property) from user document
-        const entries = user.entries;
-        res.send(entries);
+    User.findById(userId)
+        .then(user => {
+            if (!user) {
+                res.status(404).json({ message: "User not found" });
+                throw new Error("User not found.");
+            }
 
+            // Send entries array (property) from user document
+            const entries = user.entries;
+            res.send(entries);
+        })
+        .catch(error => {
+            // Handle errors
+            console.error("Error retrieving entries:", error);
+            res.status(500).json({ 
+                message: "Server error",
+                cause: error.message
+            });
+        });
     } catch (error) {
-        // Handle errors
-        console.error("Error retrieving entries:", error);
-        res.status(500).json({ message: "Server error" });
-        throw new Error("Error retrieving entries.");
+        console.error("Error deleting entry:", error);
+            res.status(500).json({ 
+                message: "Server error",
+                cause: error.message
+            });
     }
 });
 
 // Create entry
 const createEntry = asyncHandler(async (req, res) => {
+    try {
+
     // define request body params
     let { entry_name, application_name, username, password } = req.body;
-    const userId = req.params.userId;
+    const userData = req.session.user;
+    if (userData === null) {
+        throw new Error("User session not found." );
+    }
+    const userId = userData._id.toString();
 
     // Sanitize inputs
     entry_name = inputControl.sanitizeInput(entry_name);
     application_name = inputControl.sanitizeInput(application_name);
-    email = inputControl.sanitizeInput(email);
+    username = inputControl.sanitizeInput(username);
     password = inputControl.sanitizeInput(password);
 
-    try {
-        /* make sure entry_name is unique */
-        // find users document in mongodb
-        const user = await User.findById({ userId });
+    User.findById(userId)
+        .then(user => {
+            if (!user) {
+                throw new Error("User not found.");
+            }
 
-        if (!user) {
-            res.status(404).json({ message: "User not found" });
-            throw new Error("User not found.");
-        }
+            // Check if entry with the same name already exists
+            const existingEntry = user.entries.find(entry => entry.entry_name === entry_name);
 
-        // Check if entry with the same name already exists
-        const existingEntry = user.entries.find(entry => entry.entry_name === entry_name);
+            if (existingEntry) {
+                throw new Error("An entry with the same name already exists. Make sure your entry name is unique.");
+            }
 
-        if (existingEntry) {
-            res.status(400).json({ message: "An entry with the same name already exists" });
-            throw new Error("An entry with the same name already exists. Make sure your entry name is unique.");
-        }
+            // Create a new entry object
+            const newEntry = { entry_name, application_name, username, password };
 
-        // Create a new entry object
-        const newEntry = { entry_name, application_name, username, password };
+            // Append the new entry to the user's entries array
+            user.entries.push(newEntry);
 
-        // Append the new entry to the user's entries array
-        user.entries.push(newEntry);
-
-        // Save the updated user document
-        await user.save();
-
-        // Respond with success message
-        res.status(201).json({ message: "Entry created and added to user's entries" });
-    
+            // Save the updated user document
+            return user.save().then(() => {
+                // Respond with success message
+                res.status(201).json({ 
+                    message: "Entry created and added to user's entries",
+                    userId: userId,
+                    entry_name: entry_name,
+                    application_name: application_name,
+                    username: username,
+                    password: password,
+                });
+            });
+        })
+        .catch(error => {
+            // Handle errors
+            console.error("Error creating entry:", error);
+            res.status(500).json({ 
+                message: "Server Error",
+                cause: error.message
+            });
+        });
     } catch (error) {
-        // Handle errors
-        console.error("Error creating entry:", error);
-        res.status(500).json({ message: "Server error" });
-        throw new Error("Error creating entry.");
+        console.error("Error deleting entry:", error);
+            res.status(500).json({ 
+                message: "Server error",
+                cause: error.message
+            });
     }
 });
 
 // Delete entry
 const deleteEntry = asyncHandler(async (req, res) => {
-    // Gather request parameter information
-    const userId = req.params.userId;
-    const entryId = req.params.entryId;
-
     try {
-        // Find user document
-        const user = await User.findById(userId);
 
-        // Filter out the entry to delete from the entries array
-        user.entries = user.entries.filter(entry => entry._id !== entryId);
+    // Gather request parameter information
+    const userData = req.session.user;
+    if (userData === null) {
+        res.status(500).json({ message: "user session not found." });
+    }
+    const userId = userData._id.toString();
+    const { entryId } = req.body;
 
-        // Save the updated document
-        await user.save();
+    let initialEntryCount;
 
-        // Respond with success message
-        res.status(201).json({ message: "Entry deleted from the user's entries" });
-    
+    User.findById(userId)
+        .then(user => {
+            if (!user) {
+                throw new Error("User session not found." );
+            }
+
+            // Store the initial size of user entries array
+            initialEntryCount = user.entries.length;
+
+            // Filter out the entry to delete from the entries array
+            user.entries = user.entries.filter(entry => entry._id.toString() !== entryId);
+
+            // Save the updated document
+            return user.save();
+        })
+        .then(updatedUser => {
+            // Check if entry was successfully deleted
+            const finalEntryCount = updatedUser.entries.length;
+            const deletionSuccessful = initialEntryCount > finalEntryCount;
+
+            // Respond with appropriate message
+            if (deletionSuccessful) {
+                res.status(201).json({ 
+                    message: "Entry successfully deleted",
+                    userId: userId,
+                    entryId: entryId,
+                });
+            } else {
+                res.status(404).json({ 
+                    message: "Entry not found",
+                    userId: userId,
+                    entryId: entryId,
+                });
+            }
+        })
+        .catch(error => {
+            // Handle errors
+            console.error("Error deleting entry:", error);
+            res.status(500).json({ 
+                message: "Server error",
+                cause: error.message
+            });
+        });
     } catch (error) {
-        // Handle errors
         console.error("Error deleting entry:", error);
-        res.status(500).json({ message: "Server error" });
-        throw new Error("Error deleteing entry.");
+            res.status(500).json({ 
+                message: "Server error",
+                cause: error.message
+            });
     }
 });
 
 // Edit entry
 const editEntry = asyncHandler(async (req, res) => {
-    // Define and gather parameter information
-    let { entry_name, application_name, username, password } = req.body;
-    const userId = req.params.userId;
-    const entryId = req.params.entryId;
-
-    // Sanitize inputs
-    entry_name = inputControl.sanitizeInput(entry_name);
-    application_name = inputControl.sanitizeInput(application_name);
-    email = inputControl.sanitizeInput(email);
-    password = inputControl.sanitizeInput(password);
-
     try {
+        // Define and gather parameter information
+        let { entry_name, application_name, username, password } = req.body;
+        const userData = req.session.user;
+        if (userData === null) {
+            throw new Error("User session not found." );
+        }
+        const userId = userData._id.toString();
+        const { entryId } = req.body;
+
+        // Sanitize inputs
+        entry_name = inputControl.sanitizeInput(entry_name);
+        application_name = inputControl.sanitizeInput(application_name);
+        username = inputControl.sanitizeInput(username);
+        password = inputControl.sanitizeInput(password);
+
         // Find user document
-        const user = await User.findById(userId);
+        User.findById(userId)
+            .then(user => {
+                if (!user) {
+                    throw new Error("User not found.");
+                }
 
-        // Find index of entry in the entries array
-        const index = user.entries.findIndex(entry => entry._id === entryId);
+                // Find index of entry in the entries array
+                const index = user.entries.findIndex(entry => entry._id.toString() === entryId);
 
-        // Update the entry object
-        user.entries[index] = updatedEntry;
+                if (index === -1) {
+                    throw new Error("Entry not found.");
+                }
 
-        // Save the updated user document
-        await user.save();
-
-        // Respond with success message
-        res.status(201).json({ message: "Entry edited successfully" })
+                // Update the entry object
+                user.entries[index].entry_name = entry_name;
+                user.entries[index].application_name = application_name;
+                user.entries[index].username = username;
+                user.entries[index].password = password;
+                
+                // Save the updated user document
+                return user.save();
+            })
+            .then(() => {
+                // Respond with success message
+                res.status(201).json({ message: "Entry edited successfully" });
+            })
+            .catch(error => {
+                // Handle errors
+                console.error("Error editing entry:", error);
+                res.status(500).json({ 
+                    message: "Server error",
+                    cause: error.message 
+                });
+            });
 
     } catch (error) {
         // Handle errors
         console.error("Error editing entry:", error);
-        res.status(500).json({ message: "Server error" });
-        throw new Error("Error editing entry.");
+        res.status(500).json({ 
+            message: "Server error",
+            cause: error.message
+        });
     }
 });
 

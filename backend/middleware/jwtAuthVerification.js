@@ -10,7 +10,7 @@ const secretKey = crypto.randomBytes(32).toString('hex');
 const generateToken = (id) => {
 
     // Sign the JWT with the secret key
-    return jwt.sign({id}, secretKey, { expiresIn: '1h' }); 
+    return jwt.sign({id}, secretKey, { expiresIn: '24h' }); 
 }
 
 

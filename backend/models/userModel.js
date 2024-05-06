@@ -1,7 +1,7 @@
 // User Model and Functions
+const cryptojs = require('crypto-js');
 const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs')
-const crypto = require('crypto');
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -52,18 +52,13 @@ userSchema.pre('save', async function (next) {
     this.password = await bcryptjs.hash(this.password, salt);
 });
 
-function encrypt(text) {
-    const cipher = crypto.createCipheriv(algorithm, secretKey);
-    let encrypted = cipher.update(text, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return encrypted;
+const encrypt = (password, secretKey) => {
+    return cryptojs.AES.encrypt(password, secretKey).toString();
 }
 
-function decrypt(encryptedText) {
-    const decipher = crypto.createDecipheriv(algorithm, secretKey);
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+const decrypt = (cipher, secretKey) => {
+    const bytes = cryptojs.AES.decrypt(cipher, secretKey);
+    return bytes.toString(cryptojs.enc.Utf8);
 }
 
 // before saving entry data into user entries we encrypt password with aes
@@ -72,7 +67,7 @@ entrySchema.pre('save', async function (next) {
         next();
     }
 
-    this.password = encrypt(this.password);
+    this.password = encrypt(this.password, process.env.AES_SECRET_KEY);
     next();
 });
 
