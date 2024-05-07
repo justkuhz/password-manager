@@ -1,21 +1,21 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const User = require("../models/userModel");
-const crypto = require('crypto');
+const dotenv = require('dotenv');
 
-// Secret key used to sign the JWT
-const secretKey = crypto.randomBytes(32).toString('hex');
+dotenv.config();
 
 // Call this when a user logs in
 const generateToken = (id) => {
 
     // Sign the JWT with the secret key
-    return jwt.sign({id}, secretKey, { expiresIn: '24h' }); 
+    return jwt.sign({id}, process.env.JWT_SECRET, { expiresIn: '24h' }); 
 }
 
 
 const verifyToken = asyncHandler(async (req, res, next) => {
-    
+    let token;
+
     if (
         // req sends token in the header, we use the bearer token
         req.headers.authorization &&
@@ -26,7 +26,7 @@ const verifyToken = asyncHandler(async (req, res, next) => {
             token = req.headers.authorization.split(" ")[1];
 
             // devode token id and verify through jwt package
-            const decoded = jwt.verify(token, secretKey);
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             // we find the user in the db and return it without the password
             req.user = await User.findById(decoded.id).select("-password");

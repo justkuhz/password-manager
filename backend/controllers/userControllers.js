@@ -108,13 +108,13 @@ const authUser = asyncHandler(async (req, res) => {
 // Get entries
 const getEntries = asyncHandler(async (req, res) => {
     try {
-
     // define user id from request params
-    const userData = req.session.user;
-    if (userData === null) {
-        throw new Error("User session not found." );
+
+    if (req.params.userID === null) {
+        throw new Error("No userID found in parameter.");
     }
-    const userId = userData._id.toString();
+
+    const userId = req.params.userID;
 
     User.findById(userId)
         .then(user => {

@@ -60,7 +60,7 @@ const Login = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({"email": email, "password": password})
+                body: JSON.stringify({email: email, password: password})
             });
 
             toast({
@@ -87,6 +87,7 @@ const Login = () => {
                 isClosable: true,
                 position: "bottom",
             });
+
             setLoading(false);
         }
     };

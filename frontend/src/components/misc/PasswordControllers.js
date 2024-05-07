@@ -35,7 +35,7 @@ function getPasswordStrength(password) {
     // Define regex patterns for different criteria
     const lowercaseRegex = /[a-z]/;
     const uppercaseRegex = /[A-Z]/;
-    const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+    const specialCharRegex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
     const lengthRegex = /^.{12,}$/;
 
     // Check if the password meets each criteria

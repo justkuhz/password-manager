@@ -1,15 +1,23 @@
-
 import React, { useEffect } from 'react';
 import { Container, Box, Text, Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 import Login from "../components/authentication/Login";
 import Signup from "../components/authentication/Signup";
-import { Redirect, useHistory } from 'react-router-dom';
 import background from "../resources/homepage.jpg"
-
+import { Redirect, useHistory } from 'react-router-dom';
 
 const Homepage = () => {
 
-  localStorage.clear();
+  // If user is logged in or userInfo exists, push them to chats page
+  const history = useHistory();
+
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
+    // If user info found, re-route to chats
+    if (userInfo) {
+      <Redirect to = "/dashboard"/>
+    }
+  }, [history])
 
   return (
     <Box
@@ -36,10 +44,10 @@ const Homepage = () => {
           borderWidth={'10px'}
         >
           <Text
-            alignContent={"center"}
-            as="b"
-            fontSize={"70px"}
-            fontFamily="Work sans"
+            alignContent={'center'}
+            as='b'
+            fontSize={'70px'}
+            fontFamily='Work sans'
           >
             Password Manager
           </Text>
