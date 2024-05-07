@@ -44,6 +44,7 @@ const Homepage = () => {
           m={'40px 0 15px 0'}
           borderRadius={'lg'}
           borderWidth={'10px'}
+          borderColor={'yellow.300'}
         >
           <Text
             alignContent={'center'}
@@ -61,11 +62,12 @@ const Homepage = () => {
           borderRadius='lg'
           borderWidth={'10px'}
           color='black'
+          borderColor={'yellow.300'}
         >
           <Tabs variant='soft-rounded'>
             <TabList mb='1em'>
-              <Tab width='50%'>Login</Tab>
-              <Tab width='50%'>Sign Up</Tab>
+              <Tab width='50%' textColor={'black'}>Login</Tab>
+              <Tab width='50%' textColor={'black'}>Sign Up</Tab>
             </TabList>
             <TabPanels>
               <TabPanel>

@@ -147,11 +147,7 @@ const createEntry = asyncHandler(async (req, res) => {
 
     // define request body params
     let { entry_name, application_name, username, entry_password } = req.body;
-    const userData = req.body._id;
-    if (userData === null) {
-        throw new Error("User data not found." );
-    }
-    const userId = userData._id.toString();
+    const userId = req.body._id;
 
     // Sanitize inputs
     entry_name = inputControl.sanitizeInput(entry_name);
@@ -215,11 +211,7 @@ const deleteEntry = asyncHandler(async (req, res) => {
     try {
 
     // Gather request parameter information
-    const userData = req.body._id;
-    if (userData === null) {
-        res.status(500).json({ message: "user data not found." });
-    }
-    const userId = userData._id.toString();
+    const userId = req.body._id;
     const { entryId } = req.body;
 
     let initialEntryCount;
@@ -281,11 +273,7 @@ const editEntry = asyncHandler(async (req, res) => {
     try {
         // Define and gather parameter information
         let { entry_name, application_name, username, entry_password } = req.body;
-        const userData = req.body._id;
-        if (userData === null) {
-            throw new Error("User data not found." );
-        }
-        const userId = userData._id.toString();
+        const userId = req.body._id;
         const { entryId } = req.body;
 
         // Sanitize inputs
@@ -345,7 +333,7 @@ const decryptPassword = asyncHandler(async (req, res) => {
     try {
         const { cipher } = req.body;
 
-        const cleartext = decryptHandler.decrypt(cipher);
+        const cleartext = cryptoHandler.decrypt(cipher);
 
         res.status(200).json({ cleartext });
 

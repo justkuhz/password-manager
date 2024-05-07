@@ -4,38 +4,39 @@ import {
   Container, 
   Text, 
   Button, 
-  useToast,  
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
 } from "@chakra-ui/react";
-import React, {useState} from 'react';
+import React, { useState, useCallback } from 'react';
 import EntriesTable from "../components/dashboard/EntriesTable";
 import AddEntryPopup from "../components/dashboard/AddEntryPopup";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { useHistory } from "react-router-dom";
-import { user } from "../context/UserContext"
 
 const Dashboard = () => {
+  // Instantiate history
+  const history = useHistory();
+    
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [tableKey, setTableKey] = useState(0);
 
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
+  // Logout handler function
+  const logoutHandler = () => {
+    localStorage.removeItem("userInfo");
+    history.push("/");
+    setTableKey(0);
+  };
 
-    // Instantiate toast
-    const toast = useToast();
+  const refreshTable = useCallback(() => {
+    // Increment key to trigger component remount
+    setTableKey(prevKey => prevKey + 1);
+  }, []);
 
-    // Instantiate history
-    const history = useHistory();
-
-    const togglePopup = () => {
-      setIsPopupOpen(!isPopupOpen);
-    }
-
-    // Logout handler function
-    const logoutHandler = () => {
-      localStorage.removeItem("userInfo");
-      history.push("/");
-    };
+  const togglePopup = () => {
+    setIsPopupOpen(!isPopupOpen);
+  }
 
   return (
     <Box
@@ -105,10 +106,10 @@ const Dashboard = () => {
           >
             Add Entry
           </Button>
-          <AddEntryPopup isOpen={isPopupOpen} onClose={togglePopup} />
+          <AddEntryPopup isOpen={isPopupOpen} onClose={togglePopup} refreshTable={refreshTable} />
         </Box>
 
-        {<EntriesTable />}
+        {<EntriesTable key={tableKey} />}
         
       </Container>
     </Box>

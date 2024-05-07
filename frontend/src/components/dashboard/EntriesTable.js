@@ -11,10 +11,9 @@ const EntriesTable = () => {
     // eslint-disable-next-line
     const [passwordVisibility, setPasswordVisibility] = useState({});
     const { user } = UserState();
-
     const toast = useToast();
 
-    const getEntries = async () => {
+    const fetchEntries = async () => {
         try {
             const config = {
                 headers: {
@@ -72,7 +71,7 @@ const EntriesTable = () => {
     }
 
     useEffect(() => {
-        getEntries();
+        fetchEntries();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

@@ -23,6 +23,13 @@ const Signup = () => {
 
     const handleClick = () => setShow(!show);
 
+    // Enter triggers submit
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            submitHandler();
+        }
+    }
+
     // check fields when they click sign up button
     const submitHandler = async() => {
         setLoading(true);
@@ -147,6 +154,7 @@ const Signup = () => {
                 <Input
                     placeholder='Enter Your Name'
                     onChange={(e) => setName(e.target.value)}
+                    onKeyDown={handleKeyDown}
                 />
             </FormControl>
 
@@ -155,6 +163,7 @@ const Signup = () => {
                 <Input
                     placeholder='Enter Your Email'
                     onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleKeyDown}
                 />
             </FormControl>
 
@@ -165,6 +174,7 @@ const Signup = () => {
                         type={show ? 'text' : 'password'}
                         placeholder='Enter Your Password'
                         onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     />
                     <InputRightElement width={'4.5rem'}>
                         <Button h='1.75rem' size='sm' onClick={handleClick}>
@@ -182,6 +192,7 @@ const Signup = () => {
                         type={show ? 'text' : 'password'}
                         placeholder='Confirm Your Password'
                         onChange={(e) => setConfirmpassword(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     />
                     <InputRightElement width={'4.5rem'}>
                         <Button h='1.75rem' size='sm' onClick={handleClick}>

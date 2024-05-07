@@ -22,6 +22,13 @@ const Login = () => {
     // Hides/shows password
     const handleClick = () => setShow(!show);
 
+    // Enter triggers submit
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            submitHandler();
+        }
+    }
+
     // checks conditions for user to log in
     const submitHandler = async () => {
 
@@ -112,6 +119,7 @@ const Login = () => {
                     placeholder='Enter Your Email'
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleKeyDown}
                 />
             </FormControl>
 
@@ -123,9 +131,10 @@ const Login = () => {
                         placeholder='Enter Your Password'
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     />
                     <InputRightElement width={'4.5rem'}>
-                        <Button h='1.75rem' size='sm' onClick={handleClick}>
+                        <Button h='1.75rem' size='sm' colorScheme="blue" onClick={handleClick}>
                             {show ? "Hide" : "Show"}
                         </Button>
                     </InputRightElement>
