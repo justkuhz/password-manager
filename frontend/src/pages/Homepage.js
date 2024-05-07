@@ -7,17 +7,19 @@ import { Redirect, useHistory } from 'react-router-dom';
 
 const Homepage = () => {
 
-  // If user is logged in or userInfo exists, push them to chats page
+  // If user is logged in or userInfo exists, push them to dashboard page
   const history = useHistory();
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-
-    // If user info found, re-route to chats
-    if (userInfo) {
-      <Redirect to = "/dashboard"/>
+    try {
+      const userInfo = localStorage.getItem("userInfo");
+      if (userInfo) {
+        <Redirect to = "/dashboard"></Redirect>
+      }
+    } catch (error) {
+      console.error(error.message);
     }
-  }, [history])
+  }, [history]);
 
   return (
     <Box

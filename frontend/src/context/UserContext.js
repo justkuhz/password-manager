@@ -13,18 +13,16 @@ const ContextProvider = ({ children }) => {
   const history = useHistory();
 
   useEffect(() => {
-
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      setUser(userInfo);
-
-      // If user info not found, re-route to homepage
-      if (!userInfo) {
-        // history.push("/");
-        <Redirect to="/" />;
+      const userInfoRaw = localStorage.getItem("userInfo");
+      if (userInfoRaw) {
+        const userInfo = JSON.parse(userInfoRaw);
+        setUser(userInfo);
+      } else {
+        <Redirect to="/" />
       }
     } catch (error) {
-      console.error(error.message);
+      console.error(error.message)
     }
   }, [history]);
 
