@@ -2,7 +2,7 @@
 const asyncHandler = require("express-async-handler");
 const token = require("../middleware/JWTAuthVerification");
 const User = require("../models/userModel");
-const passwordControl = require("../controllers/PasswordControllers");
+const PasswordController = require("../controllers/PasswordControllers");
 const inputControl = require("../controllers/InputControllers");
 const cryptoHandler = require("../middleware/cryptoMiddleware");
 
@@ -26,7 +26,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // deny creation by throwing error if password is not strong enough
-    let passwordEval = passwordControl.getPasswordStrength(sanitizedPassword);
+    let passwordEval = PasswordController.getPasswordStrength(sanitizedPassword);
     if (passwordEval.allow === false) {
         res.status(400);
         throw new Error(passwordEval.suggestions[0]);
