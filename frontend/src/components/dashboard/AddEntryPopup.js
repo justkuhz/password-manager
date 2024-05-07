@@ -13,6 +13,8 @@ import {
   Input } from "@chakra-ui/react";
 import axios from 'axios'; // Import axios for making HTTP requests
 import { UserState } from '../../context/UserContext';
+import passwordController from "../misc/PasswordControllers";
+import PasswordStrengthIndicator from "../decorative/PasswordStrengthIndicator";
 
 const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
   const { user } = UserState();
@@ -132,6 +134,7 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
               onChange={handleChange} 
               onKeyDown={handleKeyDown}
             />
+            <PasswordStrengthIndicator strength={passwordController.getPasswordStrength(entryData.entry_password).strength_value} />
           </FormControl>
           <Button mt={4} colorScheme="blue" onClick={handleSubmit}>Submit</Button>
           <Button mt={4} ml={4} onClick={handleTogglePassword}>
