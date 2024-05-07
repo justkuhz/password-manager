@@ -9,7 +9,8 @@ const {
     authUser, 
     registerUser, 
     getEntries, 
-    decryptPassword} = require("../controllers/UserControllers");
+    decryptPassword,
+    getEntry} = require("../controllers/UserControllers");
 
 // router API endpoint
 const router = express.Router();
@@ -22,6 +23,9 @@ router.route('/login').post(authUser);
 
 // GET for getting the entries table
 router.route('/getEntries/:userID').get(verifyToken, getEntries);
+
+// GET for getting single entry
+router.route('/getEntry/:userID/:entryID').get(verifyToken, getEntry);
 
 // POST for creating and appending an entry
 router.route('/createEntry').put(verifyToken, createEntry);

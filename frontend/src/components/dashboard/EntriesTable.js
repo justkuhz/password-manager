@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { useToast, Box, Table, Thead, Tr, Td, Tbody, Th, Spinner, Button } from '@chakra-ui/react'
 import { UserState } from '../../context/UserContext';
-
+import EditEntryPopup from './EditEntryPopup';
 
 const EntriesTable = () => {
     const [data, setData] = useState([]);
@@ -12,11 +12,25 @@ const EntriesTable = () => {
     const [passwordVisibility, setPasswordVisibility] = useState({});
     const toast = useToast();
 
+    const [editPopupOpen, setEditPopupOpen] = useState(false);
+    const [editEntryId, setEditEntryId] = useState(null); // State to track the entry being edited
+
     const { user } = UserState();
     let userToken = user.token;
     let userId = user._id;
     const [token] = useState(userToken);
     const [id] = useState(userId);
+    
+    // Function to open the edit popup
+    const openEditPopup = (entryId) => {
+        setEditEntryId(entryId);
+        setEditPopupOpen(true);
+    };
+
+    // Function to close the edit popup
+    const closeEditPopup = () => {
+        setEditPopupOpen(false);
+    };
 
     const fetchEntries = async () => {
         try {
@@ -92,10 +106,6 @@ const EntriesTable = () => {
         }
     };
 
-    const handleEdit = (entryId) => {
-        // Implement logic to handle editing the entry with the given ID
-    };
-
     const handleDelete = async (entryId) => {
         try {
             // Send data to API endpoint
@@ -136,7 +146,7 @@ const EntriesTable = () => {
                 duration: 5000,
                 isClosable: true,
                 position: "top",
-            })
+            });
         };
     };
 
@@ -185,7 +195,13 @@ const EntriesTable = () => {
                                 </Button>
                                 </Td>
                                 <Td textAlign={'center'}>
-                                    <Button colorScheme="blue" onClick={() => handleEdit(item._id)}>Edit</Button>
+                                    <Button colorScheme="blue" onClick={() => openEditPopup(item._id)}>Edit</Button>
+                                    <EditEntryPopup 
+                                        isOpen={editPopupOpen} 
+                                        onClose={closeEditPopup} 
+                                        editEntryId={editEntryId} 
+                                        refreshTable={fetchEntries} 
+                                    />
                                 </Td>
                                 <Td textAlign={'center'}>
                                     <Button colorScheme="red" onClick={() => handleDelete(item._id)}>Delete</Button>

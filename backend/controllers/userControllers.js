@@ -141,6 +141,45 @@ const getEntries = asyncHandler(async (req, res) => {
     }
 });
 
+// Get single entry
+const getEntry = asyncHandler(async (req, res) => {
+    try {
+        if (req.params.userID === null) {
+            throw new Error("No userID found in parameter.");
+        }
+        if (req.params.entryID === null) {
+            throw new Error("No entryID found in parameter.");
+        }
+        const userId = req.params.userID;
+        const entryId = req.params.entryID;
+
+        User.findById(userId)
+            .then(user => {
+                if (!user) {
+                    throw new Error("User not found.");
+                }
+
+                const entry = user.entries.find(entry => entry.id.toString() === entryId);
+                
+                if (!entry) {
+                    throw new Error("Entry not found.");
+                }
+
+                res.status(200).json(entry);
+            })
+            .catch(error => {
+                console.error("Error retrieving entries:", error);
+                throw new Error(error.message);
+            });
+
+    } catch (error) {
+        res.status(500).json({ 
+            message: "Server error",
+            cause: error.message
+        });
+    }
+});
+
 // Create entry
 const createEntry = asyncHandler(async (req, res) => {
     try {
@@ -347,4 +386,12 @@ const decryptPassword = asyncHandler(async (req, res) => {
 });
 
 
-module.exports = { decryptPassword, getEntries, deleteEntry, createEntry, editEntry, authUser, registerUser };
+module.exports = { 
+    getEntry, 
+    decryptPassword, 
+    getEntries, 
+    deleteEntry, 
+    createEntry, 
+    editEntry, 
+    authUser, 
+    registerUser };

@@ -19,7 +19,6 @@ import PasswordStrengthIndicator from "../decorative/PasswordStrengthIndicator";
 const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
-  
   const { user } = UserState();
   let userToken = user.token;
   let userId = user._id;
