@@ -85,43 +85,47 @@ const Signup = () => {
             return;
         }
 
-
         // at this point it should be a successful new account creation into mongo database
         try {
-            const { response } = await fetch ("http://localhost:8000/api/user/", {
+            fetch("http://localhost:8000/api/user/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({name: name, email: email, password: password})
-            });
+            })
+            .then(response => {
+                // Check if the response is successful
+                if (response.ok) {
+                    // Convert response to JSON
+                    return response.json();
+                } else {
+                    // Log the error status and response text
+                    console.error("Registration Failed - Status:", response.status);
+                    return response.text().then(text => {
+                        throw new Error("Registration Failed - " + text);
+                    });
+                }
+            })
+            .then(data => {
+                // Show success toast
+                toast({
+                    title: "Login Successful",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "bottom",
+                });
 
-           // Check if the response is successful
-           if (response.ok) {
-            // Convert response to JSON
-            const data = await response.json();
-    
-            // Show success toast
-            toast({
-                title: "Login Successful",
-                status: "success",
-                duration: 5000,
-                isClosable: true,
-                position: "bottom",
-            });
-    
-            // Store user info in localStorage
-            localStorage.setItem("userInfo", JSON.stringify(data));
-    
-            // Set loading state to false
-            setLoading(false);
-    
-            // Navigate user to /dashboard
-            history.push("/dashboard");
-        } else {
-            throw new Error();
-        }
+                // Store user info in localStorage
+                localStorage.setItem("userInfo", JSON.stringify(data));
 
+                // Set loading state to false
+                setLoading(false);
+
+                // Navigate user to /dashboard
+                history.push("/dashboard");
+            });
         } catch (error) {
             toast({
                 title: "Error Occured!",

@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
-import { Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, FormControl, FormLabel, Input } from "@chakra-ui/react";
+import { 
+  useToast, 
+  Button, 
+  Modal, 
+  ModalOverlay, 
+  ModalContent, 
+  ModalHeader, 
+  ModalBody, 
+  ModalCloseButton, 
+  FormControl, 
+  FormLabel, 
+  Input } from "@chakra-ui/react";
 import axios from 'axios'; // Import axios for making HTTP requests
+import { UserState } from '../../context/UserContext';
 
 const AddEntryPopup = ({ isOpen, onClose }) => {
+  const { user } = UserState();
+  const toast = useToast();
+  const [showPassword, setShowPassword] = useState(false);
   const [entryData, setEntryData] = useState({
     entry_name: '',
     application_name: '',
     username: '',
-    password: ''
+    entry_password: '',
+    _id: user._id,
   });
-
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,13 +37,28 @@ const AddEntryPopup = ({ isOpen, onClose }) => {
   const handleSubmit = async () => {
     try {
       // Validate if all fields are filled
-        if (!entryData.entry_name || !entryData.application_name || !entryData.username || !entryData.password) {
-            alert('Please fill out all fields');
-            return;
+        if (!entryData.entry_name || !entryData.application_name || !entryData.username || !entryData.entry_password) {
+          toast({
+            title: "Please enter all the fields!",
+            status: "warning",
+            duration: 5000,
+            isClosable: true,
+            position: "top",
+        });
         }
-      
+
+        const config = {
+          headers: {
+              Authorization: `Bearer ${user.token}`,
+          },
+        };
+
       // Send data to API endpoint
-        const response = await axios.post('/api/user/createEntry', entryData);
+        const response = await axios.put(
+          '/api/user/createEntry', 
+          entryData,
+          config
+        );
 
         onClose();
 
@@ -38,7 +67,7 @@ const AddEntryPopup = ({ isOpen, onClose }) => {
             entry_name: '',
             application_name: '',
             username: '',
-            password: ''
+            entry_password: ''
         });
 
     } catch (error) {
@@ -73,8 +102,8 @@ const AddEntryPopup = ({ isOpen, onClose }) => {
             <FormLabel>Password</FormLabel>
             <Input 
               type={showPassword ? "text" : "password"} 
-              name="password" 
-              value={entryData.password} 
+              name="entry_password" 
+              value={entryData.entry_password} 
               onChange={handleChange} 
             />
           </FormControl>

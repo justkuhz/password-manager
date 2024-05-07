@@ -15,12 +15,13 @@ import EntriesTable from "../components/dashboard/EntriesTable";
 import AddEntryPopup from "../components/dashboard/AddEntryPopup";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { useHistory } from "react-router-dom";
+import { user } from "../context/UserContext"
 
 const Dashboard = () => {
 
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-    //Instantiate toast
+    // Instantiate toast
     const toast = useToast();
 
     // Instantiate history
@@ -55,10 +56,9 @@ const Dashboard = () => {
           mx={'auto'}
           justifyContent={'center'}
           p={3}
-          bg={'white'}
         >
           <Menu>
-              <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+              <MenuButton as={Button} colorScheme="blue" rightIcon={<ChevronDownIcon />}>
               Menu
               </MenuButton>
               <MenuList>
@@ -77,6 +77,7 @@ const Dashboard = () => {
           w={'100%'}
           borderRadius={'lg'}
           borderWidth={'10px'}
+          borderColor={'blue.400'}
         >
           <Text
             alignContent={'center'}
@@ -99,8 +100,7 @@ const Dashboard = () => {
             fontSize={'30px'}
             p={10}
             width={'300px'}
-            colorScheme="green"
-            textColor={'black'}
+            colorScheme="blue"
             onClick={togglePopup}
           >
             Add Entry

@@ -1,5 +1,4 @@
 // User Model and Functions
-const cryptojs = require('crypto-js');
 const mongoose = require('mongoose');
 const bcryptjs = require('bcryptjs')
 const dotenv = require("dotenv");
@@ -16,7 +15,7 @@ const entrySchema = mongoose.Schema(
         // app login username
         username: { type: String, required: true },
         // app login password
-        password: { type: String, required: true }
+        entry_password: { type: String, required: true }
     },
     { timestamps: true }
 );
@@ -29,7 +28,7 @@ const userSchema = mongoose.Schema(
         // email
         email: { type: String, required: true, unique: true },
         // password
-        password: { type: String, required: true },
+        password: { type: String, required: true, immutable: true},
         entries: [entrySchema],
     },
     { timestameps: true }
@@ -52,26 +51,6 @@ userSchema.pre('save', async function (next) {
     this.password = await bcryptjs.hash(this.password, salt);
 });
 
-const encrypt = (password) => {
-    return cryptojs.AES.encrypt(password, process.env.AES_SECRET_KEY).toString();
-}
-
-const decrypt = (cipher) => {
-    const bytes = cryptojs.AES.decrypt(cipher, process.env.AES_SECRET_KEY);
-    return bytes.toString(cryptojs.enc.Utf8);
-}
-
-
-// before saving entry data into user entries we encrypt password with aes
-entrySchema.pre('save', async function (next) {
-    if (!this.isModified()) {
-        next();
-    }
-
-    this.password = encrypt(this.password);
-    next();
-});
-
 // defining and exporting user model
 const User = mongoose.model("User", userSchema);
-module.exports = User, { decrypt };
+module.exports = User;

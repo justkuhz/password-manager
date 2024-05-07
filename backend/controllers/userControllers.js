@@ -4,7 +4,7 @@ const token = require("../middleware/JWTAuthVerification");
 const User = require("../models/userModel");
 const passwordControl = require("../controllers/PasswordControllers");
 const inputControl = require("../controllers/InputControllers");
-const decryptHandler = require('../models/userModel');
+const cryptoHandler = require("../middleware/cryptoMiddleware");
 
 // Register user function, creates new unique users in DB
 const registerUser = asyncHandler(async (req, res) => {
@@ -12,7 +12,6 @@ const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     
     if (!name || !email || !password) {
-        res.status(400);
         throw new Error("Please enter all the fields.");
     }
 
@@ -23,7 +22,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // validate email address
     if (inputControl.validateEmail(sanitizedEmail) === false) {
-        res.status(400).json({ message: "Please enter a valid email."});
         throw new Error("Please enter a valid email.")
     }
 
@@ -37,7 +35,6 @@ const registerUser = asyncHandler(async (req, res) => {
     User.findOne({ email: sanitizedEmail })
     .then(userExists => {
         if (userExists) {
-            res.status(400).json({ message: "There is already an account associated with this email." });
             throw new Error("There is already an account associated with this email.");
         }
         return User.create({
@@ -49,7 +46,6 @@ const registerUser = asyncHandler(async (req, res) => {
     .then(user => {
         if (user) {
             const userData = { _id: user._id, name: user.name, email: user.email, token: token.generateToken(user._id), }
-            req.session.user = userData;
 
             res.status(201).json({
                 _id: user._id,
@@ -63,8 +59,8 @@ const registerUser = asyncHandler(async (req, res) => {
     })
     .catch(error => {
         res.status(400).json({ 
-            message: "Failed to create new user.",
-            cause: error });
+            message: "Failed to create new user",
+            cause: error.message });
     });
 });
 
@@ -79,7 +75,6 @@ const authUser = asyncHandler(async (req, res) => {
 
     // Sanitize inputs
     let sanitizedEmail = inputControl.sanitizeInput(email);
-    let sanitizedPassword = inputControl.sanitizeInput(password);
 
     // find the mongodb document with a matching email
     try {
@@ -90,14 +85,13 @@ const authUser = asyncHandler(async (req, res) => {
         }
 
         // Verify the password
-        const isMatch = await user.matchPassword(sanitizedPassword);
+        const isMatch = await user.matchPassword(password);
 
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid Email or Password. Please try again." });
         }
 
         const userData = { _id: user._id, name: user.name, email: user.email, token: token.generateToken(user._id), };
-        req.session.user = userData;
 
         return res.json({
             _id: user._id,
@@ -127,7 +121,6 @@ const getEntries = asyncHandler(async (req, res) => {
     User.findById(userId)
         .then(user => {
             if (!user) {
-                res.status(404).json({ message: "User not found" });
                 throw new Error("User not found.");
             }
 
@@ -138,17 +131,13 @@ const getEntries = asyncHandler(async (req, res) => {
         .catch(error => {
             // Handle errors
             console.error("Error retrieving entries:", error);
-            res.status(500).json({ 
-                message: "Server error",
-                cause: error.message
-            });
+            throw new Error(error.message);
         });
     } catch (error) {
-        console.error("Error deleting entry:", error);
-            res.status(500).json({ 
-                message: "Server error",
-                cause: error.message
-            });
+        res.status(500).json({ 
+            message: "Server error",
+            cause: error.message
+        });
     }
 });
 
@@ -157,10 +146,10 @@ const createEntry = asyncHandler(async (req, res) => {
     try {
 
     // define request body params
-    let { entry_name, application_name, username, password } = req.body;
-    const userData = req.session.user;
+    let { entry_name, application_name, username, entry_password } = req.body;
+    const userData = req.body._id;
     if (userData === null) {
-        throw new Error("User session not found." );
+        throw new Error("User data not found." );
     }
     const userId = userData._id.toString();
 
@@ -168,7 +157,7 @@ const createEntry = asyncHandler(async (req, res) => {
     entry_name = inputControl.sanitizeInput(entry_name);
     application_name = inputControl.sanitizeInput(application_name);
     username = inputControl.sanitizeInput(username);
-    password = inputControl.sanitizeInput(password);
+    entry_password = inputControl.sanitizeInput(entry_password);
 
     User.findById(userId)
         .then(user => {
@@ -183,8 +172,10 @@ const createEntry = asyncHandler(async (req, res) => {
                 throw new Error("An entry with the same name already exists. Make sure your entry name is unique.");
             }
 
+            entry_password = cryptoHandler.encrypt(entry_password);
+
             // Create a new entry object
-            const newEntry = { entry_name, application_name, username, password };
+            const newEntry = { entry_name, application_name, username, entry_password };
 
             // Append the new entry to the user's entries array
             user.entries.push(newEntry);
@@ -198,7 +189,7 @@ const createEntry = asyncHandler(async (req, res) => {
                     entry_name: entry_name,
                     application_name: application_name,
                     username: username,
-                    password: password,
+                    entry_password: entry_password,
                 });
             });
         })
@@ -224,9 +215,9 @@ const deleteEntry = asyncHandler(async (req, res) => {
     try {
 
     // Gather request parameter information
-    const userData = req.session.user;
+    const userData = req.body._id;
     if (userData === null) {
-        res.status(500).json({ message: "user session not found." });
+        res.status(500).json({ message: "user data not found." });
     }
     const userId = userData._id.toString();
     const { entryId } = req.body;
@@ -236,7 +227,7 @@ const deleteEntry = asyncHandler(async (req, res) => {
     User.findById(userId)
         .then(user => {
             if (!user) {
-                throw new Error("User session not found." );
+                throw new Error("User data not found." );
             }
 
             // Store the initial size of user entries array
@@ -289,10 +280,10 @@ const deleteEntry = asyncHandler(async (req, res) => {
 const editEntry = asyncHandler(async (req, res) => {
     try {
         // Define and gather parameter information
-        let { entry_name, application_name, username, password } = req.body;
-        const userData = req.session.user;
+        let { entry_name, application_name, username, entry_password } = req.body;
+        const userData = req.body._id;
         if (userData === null) {
-            throw new Error("User session not found." );
+            throw new Error("User data not found." );
         }
         const userId = userData._id.toString();
         const { entryId } = req.body;
@@ -301,7 +292,7 @@ const editEntry = asyncHandler(async (req, res) => {
         entry_name = inputControl.sanitizeInput(entry_name);
         application_name = inputControl.sanitizeInput(application_name);
         username = inputControl.sanitizeInput(username);
-        password = inputControl.sanitizeInput(password);
+        entry_password = inputControl.sanitizeInput(entry_password);
 
         // Find user document
         User.findById(userId)
@@ -321,7 +312,7 @@ const editEntry = asyncHandler(async (req, res) => {
                 user.entries[index].entry_name = entry_name;
                 user.entries[index].application_name = application_name;
                 user.entries[index].username = username;
-                user.entries[index].password = password;
+                user.entries[index].entry_password = entry_password;
                 
                 // Save the updated user document
                 return user.save();
@@ -352,19 +343,17 @@ const editEntry = asyncHandler(async (req, res) => {
 // Decrypt password
 const decryptPassword = asyncHandler(async (req, res) => {
     try {
-        const { encrypted_password } = req.body
-        const cleartext = decryptHandler.decrypt(encrypted_password);
+        const { cipher } = req.body;
 
-        res.status(201).json({
-            message: "Password decrypted successfully",
-            password: cleartext
-        });
+        const cleartext = decryptHandler.decrypt(cipher);
+
+        res.status(200).json({ cleartext });
 
     } catch (error) {
         console.error("Error decrypting: ", error.message);
         res.status(500).json({
-            message: "Servser error",
-            cause: error.messages
+            message: "Server error",
+            cause: error.message
         });
     }
 });

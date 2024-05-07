@@ -9,7 +9,7 @@ const EntriesTable = () => {
     const [loading, setLoading] = useState(true);
     const [decryptedPasswords, setDecryptedPasswords] = useState({});
     // eslint-disable-next-line
-    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [passwordVisibility, setPasswordVisibility] = useState({});
     const { user } = UserState();
 
     const toast = useToast();
@@ -45,13 +45,26 @@ const EntriesTable = () => {
         setLoading(false);
     };
 
-    const decryptPassword = async (encryptedPassword) => {
+    const decryptPassword = async (cipher) => {
         try {
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            const data = {
+                cipher: cipher
+            }
+
             const response = await axios.post(
-                '/api/user/decrypt',
-                { encrypted_password: encryptedPassword}
+                `api/user/decrypt`,
+                data,
+                config
             );
-            return response.data.password;
+
+            return response.data.cleartext;
+
         } catch (error) {
             console.error("Decryption error: ", error.message);
             return 'Decryption Failed';
@@ -66,8 +79,12 @@ const EntriesTable = () => {
 
     const togglePasswordVisibility = async (index) => {
         if (data[index]) {
-            const decryptedPassword = await decryptPassword(data[index].password);
+            const decryptedPassword = await decryptPassword(data[index].entry_password);
             setDecryptedPasswords({ ...decryptedPasswords, [index]: decryptedPassword });
+            setPasswordVisibility(prevVisibility => ({
+                ...prevVisibility,
+                [index]: !prevVisibility[index]
+            }));
         }
     };
 
@@ -88,14 +105,15 @@ const EntriesTable = () => {
           borderRadius={'lg'}
           borderWidth={'10px'}
           margin={'10px'}
+          borderColor={'blue.400'}
         >
-           <Table variant="simple" borderWidth="3px" borderColor="gray.500" fontSize="xl">
+           <Table variant="simple" borderWidth="3px" borderColor="blue.100" fontSize="xl">
                 <Thead>
                     <Tr >
-                        <Th fontSize="25px" py={5}>Entry Name</Th>
-                        <Th fontSize="25px" py={5}>Application Name</Th>
-                        <Th fontSize="25px" py={5}>Username</Th>
-                        <Th fontSize="25px" py={5}>Password</Th>
+                        <Th fontSize="20px" py={5}>Entry Name</Th>
+                        <Th fontSize="20px" py={5}>Application Name</Th>
+                        <Th fontSize="20px" py={5}>Username</Th>
+                        <Th fontSize="20px" py={5}>Password</Th>
                         <Th width={'100px'}></Th>
                         <Th width={'100px'}></Th>
                         <Th width={'100px'}></Th>
@@ -111,19 +129,21 @@ const EntriesTable = () => {
                     ) : (
                         data.map((item, index) => (
                             <Tr key={index}>
-                                <Td>{item.entry_name}</Td>
-                                <Td>{item.application_name}</Td>
-                                <Td>{item.username}</Td>
-                                <Td>{passwordVisible ? decryptedPasswords[index] || "**********" : "**********"}</Td>
-                                <Td>
-                                    <Button onClick={togglePasswordVisibility}>
-                                        {passwordVisible ? "Hide" : "Show"}
-                                    </Button>
+                                <Td textAlign={'center'}>{item.entry_name}</Td>
+                                <Td textAlign={'center'}>{item.application_name}</Td>
+                                <Td textAlign={'center'}>{item.username}</Td>
+                                <Td textAlign={'center'}>
+                                    {passwordVisibility[index] && decryptedPasswords[index] ? decryptedPasswords[index] : "**********"}
                                 </Td>
-                                <Td>
+                                <Td textAlign={'center'}>
+                                <Button onClick={() => togglePasswordVisibility(index)}>
+                                    {passwordVisibility[index] ? "Hide" : "Show"}
+                                </Button>
+                                </Td>
+                                <Td textAlign={'center'}>
                                     <Button colorScheme="blue" onClick={() => handleEdit(item._id)}>Edit</Button>
                                 </Td>
-                                <Td>
+                                <Td textAlign={'center'}>
                                     <Button colorScheme="red" onClick={() => handleDelete(item._id)}>Delete</Button>
                                 </Td>
                             </Tr>

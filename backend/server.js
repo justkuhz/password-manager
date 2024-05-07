@@ -5,7 +5,6 @@ const connectDB = require("./config/db");
 const { notFound, errorHandler } = require("./middleware/ErrorMiddleware");
 const userRoutes = require("./routes/userRoutes");
 const colors = require("colors");
-const session = require('express-session');
 const cookieParser = require('cookie-parser');
 
 // connect to .env file
@@ -25,13 +24,6 @@ app.use(express.json());
 
 // Enable Cookie Parser middleware
 app.use(cookieParser());
-
-// Configure express-session middleware
-app.use(session({
-    secret: process.env.SESSION_SECRET_KEY,
-    resave: false,
-    saveUninitialized: false
-}))
 
 // app API GET to check if webserver is up
 app.get("/", (req, res) => {
