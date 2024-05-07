@@ -17,18 +17,21 @@ import passwordController from "../misc/PasswordControllers";
 import PasswordStrengthIndicator from "../decorative/PasswordStrengthIndicator";
 
 const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
-  const { user } = UserState();
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
   
+  const { user } = UserState();
+  let userToken = user.token;
   let userId = user._id;
+  const [token] = useState(userToken);
+  const [id] = useState(userId); 
 
   const [entryData, setEntryData] = useState({
     entry_name: '',
     application_name: '',
     username: '',
     entry_password: '',
-    _id: userId
+    _id: id
   });
 
   const handleChange = (e) => {
@@ -74,11 +77,12 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
 
       const config = {
         headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${token}`,
         },
       };
 
       // Send data to API endpoint
+      // eslint-disable-next-line
       const response = await axios.put(
         '/api/user/createEntry', 
         entryData,
@@ -94,11 +98,19 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
           application_name: '',
           username: '',
           entry_password: '',
-          _id: userId
+          _id: id
       });
 
     } catch (error) {
         console.error('Error submitting entry:', error);
+        toast({
+          title: "Error creating entry!",
+          status: "error",
+          description: error.message,
+          duration: 5000,
+          isClosable: true,
+          position: "top", 
+        })
     }
   };
 

@@ -10,21 +10,26 @@ const EntriesTable = () => {
     const [decryptedPasswords, setDecryptedPasswords] = useState({});
     // eslint-disable-next-line
     const [passwordVisibility, setPasswordVisibility] = useState({});
-    const { user } = UserState();
     const toast = useToast();
+
+    const { user } = UserState();
+    let userToken = user.token;
+    let userId = user._id;
+    const [token] = useState(userToken);
+    const [id] = useState(userId);
 
     const fetchEntries = async () => {
         try {
             const config = {
                 headers: {
-                    Authorization: `Bearer ${user.token}`,
+                    Authorization: `Bearer ${token}`,
                 },
             };
 
             setLoading(true);
 
             const { data } = await axios.get(
-                `/api/user/getEntries/${user._id}`,
+                `/api/user/getEntries/${id}`,
                 config
             );
 
@@ -48,7 +53,7 @@ const EntriesTable = () => {
         try {
             const config = {
                 headers: {
-                    Authorization: `Bearer ${user.token}`,
+                    Authorization: `Bearer ${token}`,
                 },
             };
 
@@ -91,8 +96,48 @@ const EntriesTable = () => {
         // Implement logic to handle editing the entry with the given ID
     };
 
-    const handleDelete = (entryId) => {
-        // Implement logic to handle deleting the entry with the given ID
+    const handleDelete = async (entryId) => {
+        try {
+            // Send data to API endpoint
+            await fetch("http://localhost:8000/api/user/deleteEntry", {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ _id: id, entryId: entryId })
+            })
+            .then(response => {
+                // Check if the response is successful
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("Failed to delete entry.");
+                }
+            }).then(data => {
+                // Show success toast
+                toast({
+                    title: "Deletion Successful",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "bottom",
+                });
+                fetchEntries();
+            });
+            
+            
+        } catch (error) {
+            console.error('Error deleteing entry:', error);
+            toast({
+                title: "Error deleting entry!",
+                status: "error",
+                description: error.message,
+                duration: 5000,
+                isClosable: true,
+                position: "top",
+            })
+        };
     };
 
     return (
