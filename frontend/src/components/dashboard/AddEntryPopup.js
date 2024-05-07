@@ -18,12 +18,15 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
   const { user } = UserState();
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  
+  let userId = user._id;
+
   const [entryData, setEntryData] = useState({
     entry_name: '',
     application_name: '',
     username: '',
     entry_password: '',
-    _id: user._id,
+    _id: userId
   });
 
   const handleChange = (e) => {
@@ -38,6 +41,20 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
     if (e.key === 'Enter') {
       handleSubmit();
     }
+  };
+
+  const generatePassword = () => {
+    const length = Math.floor(Math.random() * 5) + 16; // Random length between 16 to 20
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      password += characters[randomIndex];
+    }
+    setEntryData(prevData => ({
+      ...prevData,
+      entry_password: password
+    }));
   };
 
   const handleSubmit = async () => {
@@ -74,7 +91,8 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
           entry_name: '',
           application_name: '',
           username: '',
-          entry_password: ''
+          entry_password: '',
+          _id: userId
       });
 
     } catch (error) {
@@ -92,7 +110,7 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
       <ModalContent>
         <ModalHeader>Add Entry</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody marginBottom={6}>
           <FormControl>
             <FormLabel>Entry Name</FormLabel>
             <Input type="text" name="entry_name" value={entryData.entry_name} onChange={handleChange} onKeyDown={handleKeyDown} />
@@ -118,6 +136,9 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
           <Button mt={4} colorScheme="blue" onClick={handleSubmit}>Submit</Button>
           <Button mt={4} ml={4} onClick={handleTogglePassword}>
             {showPassword ? "Hide Password" : "Show Password"}
+          </Button>
+          <Button mt={4} ml={4} colorScheme="green" onClick={generatePassword}>
+            Generate
           </Button>
         </ModalBody>
       </ModalContent>

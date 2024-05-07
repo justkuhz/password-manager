@@ -62,19 +62,23 @@ const Login = () => {
         }
 
         try {
-            const response = await fetch("http://localhost:8000/api/user/login", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email, password: password })
-            });
-        
-            // Check if the response is successful
-            if (response.ok) {
-                // Convert response to JSON
-                const data = await response.json();
-        
+            await fetch("http://localhost:8000/api/user/login", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email, password: password })
+            })
+            .then(response => {
+                // Check if the response is successful
+                if (response.ok) {
+                    // Convert response to JSON
+                    return response.json();
+                } else {
+                    throw new Error("Invalid username or password. Please try again.");
+                }
+            })
+            .then(data => {
                 // Show success toast
                 toast({
                     title: "Login Successful",
@@ -83,29 +87,29 @@ const Login = () => {
                     isClosable: true,
                     position: "bottom",
                 });
-        
+
                 // Store user info in localStorage
                 localStorage.setItem("userInfo", JSON.stringify(data))
-        
+
                 // Set loading state to false
                 setLoading(false);
-        
+
                 // Navigate user to /dashboard
                 history.push("/dashboard");
-            } else {
-                throw new Error("Invalid username or password. Please try again.");
-            }
-
+            })
+            .catch(error => {
+                throw new Error(error)
+                setLoading(false);
+            });
         } catch (error) {
             toast({
-                title: "Login Failed!\n",
+                title: "Error Occured!",
                 description: error.message,
                 status: "error",
                 duration: 5000,
                 isClosable: true,
                 position: "bottom",
             });
-
             setLoading(false);
         }
     };

@@ -94,7 +94,7 @@ const Signup = () => {
 
         // at this point it should be a successful new account creation into mongo database
         try {
-            fetch("http://localhost:8000/api/user/", {
+            await fetch("http://localhost:8000/api/user/", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -132,6 +132,8 @@ const Signup = () => {
 
                 // Navigate user to /dashboard
                 history.push("/dashboard");
+
+
             });
         } catch (error) {
             toast({
