@@ -13,7 +13,7 @@ import {
   Input } from "@chakra-ui/react";
 import axios from 'axios'; // Import axios for making HTTP requests
 import { UserState } from '../../context/UserContext';
-import passwordController from "../misc/PasswordControllers";
+import PasswordController from "../misc/PasswordControllers";
 import PasswordStrengthIndicator from "../decorative/PasswordStrengthIndicator";
 
 const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
