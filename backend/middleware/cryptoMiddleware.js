@@ -5,7 +5,7 @@ dotenv.config();
 
 const decrypt = (cipher) => {
     const bytes = cryptojs.AES.decrypt(cipher, process.env.AES_SECRET_KEY);
-    return bytes.toString(cryptojs.enc.Utf8);
+    return bytes.toString(cryptojs.enc.Latin1);
 }
 
 const encrypt = (password) => {

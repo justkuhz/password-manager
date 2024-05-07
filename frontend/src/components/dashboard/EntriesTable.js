@@ -47,9 +47,16 @@ const EntriesTable = () => {
                 config
             );
 
+            if (!data || Object.keys(data).length === 0) {
+                // If data is empty, return without updating state
+                setLoading(false);
+                return;
+            }
+
             console.log(data);
             setData(data);
             setLoading(false);
+
         } catch (error) {
             toast({
                 title: "Error Occured!",
