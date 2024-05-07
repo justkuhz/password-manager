@@ -30,7 +30,8 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
         application_name: '',
         username: '',
         entry_password: '',
-        _id: id
+        user_id: id,
+        entry_id: editEntryId
     });
 
     useEffect(() => {
@@ -84,7 +85,8 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
                 application_name: data.application_name,
                 username: data.username,
                 entry_password: decryptedPassword,
-                _id: id,
+                user_id: id,
+                entry_id: editEntryId,
             });
         } catch (error) {
             console.error('Error fetching entry:', error);
@@ -127,9 +129,7 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    entryData
-                })
+                body: JSON.stringify(entryData),
             })
             .then(response => {
                 if (response.ok) {
@@ -142,7 +142,8 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
                         application_name: '',
                         username: '',
                         entry_password: '',
-                        _id: id,
+                        user_id: id,
+                        entry_id: '',
                     });
                 }
             });
@@ -206,7 +207,7 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
                     <FormControl mt={4}>
                         <FormLabel>Password</FormLabel>
                         <Input 
-                            type="password" 
+                            type={showPassword ? "text" : "password"} 
                             name="entry_password" 
                             value={entryData.entry_password} 
                             onChange={handleChange} 

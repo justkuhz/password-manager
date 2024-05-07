@@ -159,7 +159,7 @@ const getEntry = asyncHandler(async (req, res) => {
                     throw new Error("User not found.");
                 }
 
-                const entry = user.entries.find(entry => entry.id.toString() === entryId);
+                const entry = user.entries.find(entry => entry._id.toString() === entryId);
                 
                 if (!entry) {
                     throw new Error("Entry not found.");
@@ -183,7 +183,6 @@ const getEntry = asyncHandler(async (req, res) => {
 // Create entry
 const createEntry = asyncHandler(async (req, res) => {
     try {
-
     // define request body params
     let { entry_name, application_name, username, entry_password } = req.body;
     const userId = req.body._id;
@@ -312,8 +311,8 @@ const editEntry = asyncHandler(async (req, res) => {
     try {
         // Define and gather parameter information
         let { entry_name, application_name, username, entry_password } = req.body;
-        const userId = req.body._id;
-        const { entryId } = req.body;
+        const user_id = req.body.user_id;
+        const entry_id = req.body.entry_id;
 
         // Sanitize inputs
         entry_name = inputControl.sanitizeInput(entry_name);
@@ -322,14 +321,14 @@ const editEntry = asyncHandler(async (req, res) => {
         entry_password = inputControl.sanitizeInput(entry_password);
 
         // Find user document
-        User.findById(userId)
+        User.findById(user_id)
             .then(user => {
                 if (!user) {
                     throw new Error("User not found.");
                 }
 
                 // Find index of entry in the entries array
-                const index = user.entries.findIndex(entry => entry._id.toString() === entryId);
+                const index = user.entries.findIndex(entry => entry._id.toString() === entry_id);
 
                 if (index === -1) {
                     throw new Error("Entry not found.");
