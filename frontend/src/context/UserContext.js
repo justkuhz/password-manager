@@ -8,7 +8,7 @@ import { Redirect, useHistory } from "react-router-dom";
 const UserContext = createContext();
 
 const ContextProvider = ({ children }) => {
-  const [user, setUser] = useState();
+  const [user, setUser] = useState([]);
 
   const history = useHistory();
 

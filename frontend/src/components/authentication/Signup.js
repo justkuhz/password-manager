@@ -96,21 +96,32 @@ const Signup = () => {
                 body: JSON.stringify({name: name, email: email, password: password})
             });
 
+           // Check if the response is successful
+           if (response.ok) {
+            // Convert response to JSON
+            const data = await response.json();
+    
+            // Show success toast
             toast({
-                title: "Registration Successful",
+                title: "Login Successful",
                 status: "success",
                 duration: 5000,
                 isClosable: true,
                 position: "bottom",
             });
-
-            localStorage.setItem('userInfo', JSON.stringify(response));
-
+    
+            // Store user info in localStorage
+            localStorage.setItem("userInfo", JSON.stringify(data));
+    
+            // Set loading state to false
             setLoading(false);
+    
+            // Navigate user to /dashboard
+            history.push("/dashboard");
+        } else {
+            throw new Error();
+        }
 
-            // take user to /dashboard page
-            history.push('/dashboard');
-        
         } catch (error) {
             toast({
                 title: "Error Occured!",

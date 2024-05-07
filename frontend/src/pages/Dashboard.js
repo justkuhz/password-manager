@@ -48,17 +48,25 @@ const Dashboard = () => {
       backgroundPosition="center"
       overflowY={"scroll"}
     >
-      <Container>
-        <Menu>
-              <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-              </MenuButton>
-              <MenuList>
-                  <MenuItem onClick={logoutHandler}>Logout</MenuItem>
-              </MenuList>
-          </Menu>
-      </Container>
 
       <Container maxW='xxl' centerContent>
+        <Box
+          display={'flex'}
+          mx={'auto'}
+          justifyContent={'center'}
+          p={3}
+          bg={'white'}
+        >
+          <Menu>
+              <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+              Menu
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={logoutHandler}>Logout</MenuItem>
+              </MenuList>
+          </Menu>
+        </Box>
+
         <Box
           display={'flex'}
           mx={'auto'}

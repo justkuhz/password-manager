@@ -52,14 +52,15 @@ userSchema.pre('save', async function (next) {
     this.password = await bcryptjs.hash(this.password, salt);
 });
 
-const encrypt = (password, secretKey) => {
-    return cryptojs.AES.encrypt(password, secretKey).toString();
+const encrypt = (password) => {
+    return cryptojs.AES.encrypt(password, process.env.AES_SECRET_KEY).toString();
 }
 
-const decrypt = (cipher, secretKey) => {
-    const bytes = cryptojs.AES.decrypt(cipher, secretKey);
+const decrypt = (cipher) => {
+    const bytes = cryptojs.AES.decrypt(cipher, process.env.AES_SECRET_KEY);
     return bytes.toString(cryptojs.enc.Utf8);
 }
+
 
 // before saving entry data into user entries we encrypt password with aes
 entrySchema.pre('save', async function (next) {
@@ -67,7 +68,7 @@ entrySchema.pre('save', async function (next) {
         next();
     }
 
-    this.password = encrypt(this.password, process.env.AES_SECRET_KEY);
+    this.password = encrypt(this.password);
     next();
 });
 

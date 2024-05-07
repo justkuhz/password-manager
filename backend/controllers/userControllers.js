@@ -4,6 +4,7 @@ const token = require("../middleware/JWTAuthVerification");
 const User = require("../models/userModel");
 const passwordControl = require("../controllers/PasswordControllers");
 const inputControl = require("../controllers/InputControllers");
+const decryptHandler = require('../models/userModel');
 
 // Register user function, creates new unique users in DB
 const registerUser = asyncHandler(async (req, res) => {
@@ -72,9 +73,8 @@ const authUser = asyncHandler(async (req, res) => {
     // define request body params
     const { email, password } = req.body;
 
-    if (!email|| !email) {
-        res.status(400);
-        throw new Error("Please enter all the fields.");
+    if (!email || !password) {
+        return res.status(400).json({ message: "Please enter all the fields." });
     }
 
     // Sanitize inputs
@@ -82,27 +82,35 @@ const authUser = asyncHandler(async (req, res) => {
     let sanitizedPassword = inputControl.sanitizeInput(password);
 
     // find the mongodb document with a matching email
-    User.findOne({ email: sanitizedEmail })
-    .then(user => {
-        if (user && user.matchPassword(sanitizedPassword)) {
-            const userData = { _id: user._id, name: user.name, email: user.email, token: token.generateToken(user._id), }
-            req.session.user = userData;
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                token: token.generateToken(user._id),
-            });
-        } else {
-            res.status(401);
-            throw new Error("Invalid Email or Password. Please try again.");
+    try {
+        const user = await User.findOne({ email: sanitizedEmail });
+
+        if (!user) {
+            return res.status(401).json({ message: "Invalid Email or Password. Please try again." });
         }
-    })
-    .catch(error => {
-        res.status(500).json({ 
-            message: "Failed to authenticate user.",
-            cause: error });
-    });
+
+        // Verify the password
+        const isMatch = await user.matchPassword(sanitizedPassword);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid Email or Password. Please try again." });
+        }
+
+        const userData = { _id: user._id, name: user.name, email: user.email, token: token.generateToken(user._id), };
+        req.session.user = userData;
+
+        return res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            token: token.generateToken(user._id),
+        });
+    } catch (error) {
+        return res.status(500).json({ 
+            message: "Login Error",
+            cause: error.message 
+        });
+    }
 });
 
 // Get entries
@@ -333,7 +341,7 @@ const editEntry = asyncHandler(async (req, res) => {
 
     } catch (error) {
         // Handle errors
-        console.error("Error editing entry:", error);
+        console.error("Error editing entry: ", error.message);
         res.status(500).json({ 
             message: "Server error",
             cause: error.message
@@ -341,4 +349,25 @@ const editEntry = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { getEntries, deleteEntry, createEntry, editEntry, authUser, registerUser };
+// Decrypt password
+const decryptPassword = asyncHandler(async (req, res) => {
+    try {
+        const { encrypted_password } = req.body
+        const cleartext = decryptHandler.decrypt(encrypted_password);
+
+        res.status(201).json({
+            message: "Password decrypted successfully",
+            password: cleartext
+        });
+
+    } catch (error) {
+        console.error("Error decrypting: ", error.message);
+        res.status(500).json({
+            message: "Servser error",
+            cause: error.messages
+        });
+    }
+});
+
+
+module.exports = { decryptPassword, getEntries, deleteEntry, createEntry, editEntry, authUser, registerUser };

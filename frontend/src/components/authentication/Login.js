@@ -55,28 +55,39 @@ const Login = () => {
         }
 
         try {
-            const { response } = await fetch ("http://localhost:8000/api/user/login", {
+            const response = await fetch("http://localhost:8000/api/user/login", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({email: email, password: password})
+                body: JSON.stringify({ email: email, password: password })
             });
-
-            toast({
-                title: "Login Successful",
-                status: "success",
-                duration: 5000,
-                isClosable: true,
-                position: "bottom",
-            });
-
-            localStorage.setItem("userInfo", JSON.stringify(response));
-
-            setLoading(false);
-
-            // take user to /dashboard
-            history.push("/dashboard");
+        
+            // Check if the response is successful
+            if (response.ok) {
+                // Convert response to JSON
+                const data = await response.json();
+        
+                // Show success toast
+                toast({
+                    title: "Login Successful",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "bottom",
+                });
+        
+                // Store user info in localStorage
+                localStorage.setItem("userInfo", JSON.stringify(data))
+        
+                // Set loading state to false
+                setLoading(false);
+        
+                // Navigate user to /dashboard
+                history.push("/dashboard");
+            } else {
+                throw new Error("Invalid username or password. Please try again.");
+            }
 
         } catch (error) {
             toast({

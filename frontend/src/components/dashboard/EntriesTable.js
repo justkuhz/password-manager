@@ -3,9 +3,13 @@ import axios from 'axios';
 import { useToast, Box, Table, Thead, Tr, Td, Tbody, Th, Spinner, Button } from '@chakra-ui/react'
 import { UserState } from '../../context/UserContext';
 
+
 const EntriesTable = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [decryptedPasswords, setDecryptedPasswords] = useState({});
+    // eslint-disable-next-line
+    const [passwordVisible, setPasswordVisible] = useState(false);
     const { user } = UserState();
 
     const toast = useToast();
@@ -27,6 +31,7 @@ const EntriesTable = () => {
 
             console.log(data);
             setData(data);
+            setLoading(false);
         } catch (error) {
             toast({
                 title: "Error Occured!",
@@ -40,14 +45,30 @@ const EntriesTable = () => {
         setLoading(false);
     };
 
+    const decryptPassword = async (encryptedPassword) => {
+        try {
+            const response = await axios.post(
+                '/api/user/decrypt',
+                { encrypted_password: encryptedPassword}
+            );
+            return response.data.password;
+        } catch (error) {
+            console.error("Decryption error: ", error.message);
+            return 'Decryption Failed';
+        }
+    }
+
     useEffect(() => {
         getEntries();
-    });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    const [passwordVisible, setPasswordVisible] = useState(false);
 
-    const togglePasswordVisibility = () => {
-        setPasswordVisible(!passwordVisible);
+    const togglePasswordVisibility = async (index) => {
+        if (data[index]) {
+            const decryptedPassword = await decryptPassword(data[index].password);
+            setDecryptedPasswords({ ...decryptedPasswords, [index]: decryptedPassword });
+        }
     };
 
     const handleEdit = (entryId) => {
@@ -93,7 +114,7 @@ const EntriesTable = () => {
                                 <Td>{item.entry_name}</Td>
                                 <Td>{item.application_name}</Td>
                                 <Td>{item.username}</Td>
-                                <Td>{passwordVisible ? item.password : "**********"}</Td>
+                                <Td>{passwordVisible ? decryptedPasswords[index] || "**********" : "**********"}</Td>
                                 <Td>
                                     <Button onClick={togglePasswordVisibility}>
                                         {passwordVisible ? "Hide" : "Show"}
