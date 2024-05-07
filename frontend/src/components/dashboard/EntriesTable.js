@@ -32,6 +32,7 @@ const EntriesTable = () => {
         setEditPopupOpen(false);
     };
 
+    // fetch all entries to show on table
     const fetchEntries = async () => {
         try {
             const config = {
@@ -70,6 +71,7 @@ const EntriesTable = () => {
         setLoading(false);
     };
 
+    // decrypt password api endpoint
     const decryptPassword = async (cipher) => {
         try {
             const config = {
@@ -96,12 +98,14 @@ const EntriesTable = () => {
         }
     }
 
+    // call to refresh table
     useEffect(() => {
         fetchEntries();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
+    // hide/show password in the table
     const togglePasswordVisibility = async (index) => {
         if (data[index]) {
             const decryptedPassword = await decryptPassword(data[index].entry_password);
@@ -113,6 +117,7 @@ const EntriesTable = () => {
         }
     };
 
+    // delete endpoint to remove an entry
     const handleDelete = async (entryId) => {
         try {
             // Send data to API endpoint
@@ -157,6 +162,7 @@ const EntriesTable = () => {
         };
     };
 
+    // User Interface
     return (
         <Box 
           maxW="xxl" 

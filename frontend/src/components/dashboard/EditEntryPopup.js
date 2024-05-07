@@ -11,16 +11,16 @@ import {
   FormControl, 
   FormLabel, 
   Input } from "@chakra-ui/react";
-import axios from 'axios'; // Import axios for making HTTP requests
+import axios from 'axios';
 import { UserState } from '../../context/UserContext';
 import PasswordController from "../misc/PasswordControllers";
 import PasswordStrengthIndicator from "../decorative/PasswordStrengthIndicator";
 
+// Edit Entry Modal
 const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
     const toast = useToast();
     const { user } = UserState();
     const [showPassword, setShowPassword] = useState(false);
-
     let userToken = user.token;
     let userId = user._id;
     const [token] = useState(userToken);
@@ -42,6 +42,7 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
     // eslint-disable-next-line
     }, [editEntryId]);
 
+    // decrypt password hit endpoint api
     const decryptPassword = async (cipher) => {
         try {
             const config = {
@@ -68,6 +69,7 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
         }
     }
 
+    // fetching single entry to edit
     const fetchEntryDetails = async () => {
         try {
             const config = {
@@ -101,6 +103,7 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
         }
     };
 
+    // handle text input change
     const handleChange = (e) => {
         const { name, value } = e.target;
         setEntryData(prevData => ({
@@ -109,6 +112,7 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
         }));
       };
 
+    // handle submit button
     const handleSubmit = async () => {
         try {
             // Validate if all fields are filled
@@ -123,6 +127,7 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
                 return;
             }
 
+            // post edit entry endpoint
             await fetch("http://localhost:8000/api/user/editEntry", {
                 method: "POST",
                 headers: {
@@ -161,25 +166,29 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
         }
     };
 
+    // handle enter key
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
           handleSubmit();
         }
       };
 
+    // handle hide/show
     const handleTogglePassword = () => {
         setShowPassword(!showPassword);
     };
 
+    // generate password function
     const generatePassword = () => {
-    let password = '';
-    password = PasswordController.generatePassword();
-    setEntryData(prevData => ({
-        ...prevData,
-        entry_password: password
-    }));
+        let password = '';
+        password = PasswordController.generatePassword();
+        setEntryData(prevData => ({
+            ...prevData,
+            entry_password: password
+        }));
     };
   
+    // User Interface
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
@@ -208,7 +217,7 @@ const EditEntryPopup = ({ isOpen, onClose, editEntryId, refreshTable }) => {
                             onChange={handleChange} 
                             onKeyDown={handleKeyDown}
                         />
-                        <PasswordStrengthIndicator strength={passwordController.getPasswordStrength(entryData.entry_password).strength_value} />
+                        <PasswordStrengthIndicator strength={PasswordController.getPasswordStrength(entryData.entry_password).strength_value} />
                     </FormControl>
                     <Button mt={4} colorScheme="blue" onClick={handleSubmit}>Update</Button>
                     <Button mt={4} ml={4} onClick={handleTogglePassword}>

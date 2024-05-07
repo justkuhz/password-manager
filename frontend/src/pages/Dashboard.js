@@ -38,6 +38,7 @@ const Dashboard = () => {
     setIsPopupOpen(!isPopupOpen);
   }
 
+  // User Interface
   return (
     <Box
       backgroundImage={`url(${background})`}

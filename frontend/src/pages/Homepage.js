@@ -21,6 +21,7 @@ const Homepage = () => {
     }
   }, [history]);
 
+  // User Interface
   return (
     <Box
       backgroundImage={`url(${background})`}

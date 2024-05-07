@@ -1,5 +1,4 @@
 // Sign up for a new account component of home page
-
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { VStack } from '@chakra-ui/layout';
 import { FormControl, FormLabel } from "@chakra-ui/form-control";
@@ -11,7 +10,9 @@ import inputController from "../misc/InputControllers";
 import passwordController from "../misc/PasswordControllers";
 import PasswordStrengthIndicator from "../decorative/PasswordStrengthIndicator";
 
+// React Component for registering a new account/user
 const Signup = () => {
+    // Defining component fields and items
     const [name, setName] = useState();
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
@@ -21,6 +22,7 @@ const Signup = () => {
     const toast = useToast();
     const history = useHistory();
 
+    // Handle user click
     const handleClick = () => setShow(!show);
 
     // Enter triggers submit
@@ -79,6 +81,7 @@ const Signup = () => {
             return;
         }
 
+        // Password strength measurement
         let passwordAnalysis = passwordController.getPasswordStrength(password);
         if (passwordAnalysis.allow === false) {
             toast({
@@ -92,7 +95,7 @@ const Signup = () => {
             return;
         }
 
-        // at this point it should be a successful new account creation into mongo database
+        // At this point it should be a successful new account creation into mongo database
         try {
             await fetch("http://localhost:8000/api/user/", {
                 method: 'POST',
@@ -148,6 +151,7 @@ const Signup = () => {
         }
     };
 
+    // User Interface component
     return (
         <VStack spacing='5px' color='black'>
 

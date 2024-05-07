@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Password color bar
 const PasswordStrengthIndicator = ({ strength }) => {
   const getColor = () => {
     var default_color = '#dededf';
@@ -17,6 +18,7 @@ const PasswordStrengthIndicator = ({ strength }) => {
     }
   };
 
+  // Bar component
   return (
     <div
       style={{

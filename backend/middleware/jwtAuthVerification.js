@@ -3,16 +3,17 @@ const asyncHandler = require('express-async-handler');
 const User = require("../models/userModel");
 const dotenv = require('dotenv');
 
+// get jwt secret key from .env file
 dotenv.config();
 
 // Call this when a user logs in
 const generateToken = (id) => {
 
     // Sign the JWT with the secret key
-    return jwt.sign({id}, process.env.JWT_SECRET, { expiresIn: '24h' }); 
+    return jwt.sign({id}, process.env.JWT_SECRET, { expiresIn: '30m' }); 
 }
 
-
+// Verify the user session JWT token, we use this to protect our routes/endpoints
 const verifyToken = asyncHandler(async (req, res, next) => {
     let token;
 

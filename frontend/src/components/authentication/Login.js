@@ -9,14 +9,16 @@ import { useToast } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 import inputController from "../misc/InputControllers";
 
+// React Login Component
 const Login = () => {
+    // Setters and Getters for our items
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    // initialize toast and router history
     const toast = useToast();
-
     const history = useHistory();
 
     // Hides/shows password
@@ -49,6 +51,7 @@ const Login = () => {
             return;
         }
 
+        // checks that a valid email address was entered
         if (inputController.validateEmail(email) === false) {
             toast({
                 title: "Please enter a valid email address",
@@ -62,6 +65,7 @@ const Login = () => {
         }
 
         try {
+            // try posting to login api endpoint
             await fetch("http://localhost:8000/api/user/login", {
             method: 'POST',
             headers: {
@@ -99,7 +103,6 @@ const Login = () => {
             })
             .catch(error => {
                 throw new Error(error)
-                setLoading(false);
             });
         } catch (error) {
             toast({
@@ -114,6 +117,7 @@ const Login = () => {
         }
     };
 
+    // UI Component
     return (
         <VStack spacing='5px' color='black'>
             

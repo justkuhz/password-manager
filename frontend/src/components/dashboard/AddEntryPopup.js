@@ -11,12 +11,14 @@ import {
   FormControl, 
   FormLabel, 
   Input } from "@chakra-ui/react";
-import axios from 'axios'; // Import axios for making HTTP requests
+import axios from 'axios';
 import { UserState } from '../../context/UserContext';
 import PasswordController from "../misc/PasswordControllers";
 import PasswordStrengthIndicator from "../decorative/PasswordStrengthIndicator";
 
+// Popup modal for adding entry to user model
 const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
+  // Define items and states
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const { user } = UserState();
@@ -33,6 +35,7 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
     _id: id
   });
 
+  // Text input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEntryData(prevData => ({
@@ -41,21 +44,24 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
     }));
   };
 
+  // Enter key
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSubmit();
     }
   };
 
+  // Generate password function
   const generatePassword = () => {
     let password = '';
-    password = passwordController.generatePassword();
+    password = PasswordController.generatePassword();
     setEntryData(prevData => ({
       ...prevData,
       entry_password: password
     }));
   };
 
+  // On submit button
   const handleSubmit = async () => {
     try {
       // Validate if all fields are filled
@@ -108,10 +114,12 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
     }
   };
 
+  // Toggling show/hide password
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
 
+  // User Interface 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -140,7 +148,7 @@ const AddEntryPopup = ({ isOpen, onClose, refreshTable}) => {
               onChange={handleChange} 
               onKeyDown={handleKeyDown}
             />
-            <PasswordStrengthIndicator strength={passwordController.getPasswordStrength(entryData.entry_password).strength_value} />
+            <PasswordStrengthIndicator strength={PasswordController.getPasswordStrength(entryData.entry_password).strength_value} />
           </FormControl>
           <Button mt={4} colorScheme="blue" onClick={handleSubmit}>Submit</Button>
           <Button mt={4} ml={4} onClick={handleTogglePassword}>

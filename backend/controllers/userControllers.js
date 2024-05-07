@@ -107,7 +107,7 @@ const authUser = asyncHandler(async (req, res) => {
     }
 });
 
-// Get entries
+// Get all entries for a user
 const getEntries = asyncHandler(async (req, res) => {
     try {
     // define user id from request params

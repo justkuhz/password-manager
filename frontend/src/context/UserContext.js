@@ -1,7 +1,6 @@
 // Context file
 // Web-app state that can be called at any location or time
 // "Single Truth"
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Redirect, useHistory } from "react-router-dom";
 

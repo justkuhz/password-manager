@@ -1,5 +1,4 @@
 // connect us to mongo db and log status
-
 const mongoose = require('mongoose');
 
 mongoose.set('strictQuery', true);
